@@ -12,6 +12,22 @@ type DownloadResultProps = {
   compact?: boolean;
 };
 
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function formatSavings(originalSize: number, compressedSize: number): string {
+  if (compressedSize >= originalSize) {
+    const increase = ((compressedSize - originalSize) / originalSize) * 100;
+    return `${increase.toFixed(0)}% larger`;
+  }
+
+  const savings = ((originalSize - compressedSize) / originalSize) * 100;
+  return `${savings.toFixed(0)}% smaller`;
+}
+
 export function DownloadResult({
   result,
   onReset,
@@ -25,6 +41,8 @@ export function DownloadResult({
     anchor.click();
     URL.revokeObjectURL(url);
   };
+
+  const metadata = result.metadata;
 
   return (
     <div
@@ -42,6 +60,13 @@ export function DownloadResult({
         <p className="truncate text-sm text-muted-foreground">
           {result.filename}
         </p>
+        {metadata ? (
+          <p className="text-sm text-muted-foreground">
+            {formatBytes(metadata.originalSize)} →{" "}
+            {formatBytes(metadata.compressedSize)} (
+            {formatSavings(metadata.originalSize, metadata.compressedSize)})
+          </p>
+        ) : null}
       </div>
       <div
         className={cn(

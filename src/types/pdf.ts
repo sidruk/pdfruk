@@ -24,9 +24,15 @@ export type SplitOptions = {
   selectedPages?: number[];
 };
 
+export type ProcessResultMetadata = {
+  originalSize: number;
+  compressedSize: number;
+};
+
 export type ProcessResult = {
   blob: Blob;
   filename: string;
+  metadata?: ProcessResultMetadata;
 };
 
 export type ProcessProgress = {
@@ -58,6 +64,16 @@ export type SplitWorkerRequest = {
   options: SplitOptions;
 };
 
+export type CompressPreset = "low" | "medium" | "high";
+
+export type CompressWorkerRequest = {
+  type: "compress";
+  buffer: ArrayBuffer;
+  preset: CompressPreset;
+  originalName: string;
+  originalSize: number;
+};
+
 export type WorkerProgressMessage = {
   type: "progress";
   current: number;
@@ -70,6 +86,7 @@ export type WorkerSuccessMessage = {
   data: ArrayBuffer;
   filename: string;
   contentType?: string;
+  metadata?: ProcessResultMetadata;
 };
 
 export type WorkerErrorMessage = {

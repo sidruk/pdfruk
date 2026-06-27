@@ -141,7 +141,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/compress",
     icon: Minimize2,
     category: "Edit",
-    status: "coming-soon",
+    status: "live",
   },
   {
     id: "protect",
