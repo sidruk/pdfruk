@@ -2,14 +2,13 @@ import { ADMIN_COOKIE_NAME } from "@/lib/analytics/constants";
 
 export { ADMIN_COOKIE_NAME };
 
+const ADMIN_USERNAME = "sid";
+const ADMIN_PASSWORD = "sid";
+const SESSION_SECRET = "pdfruk-admin-session";
 const SESSION_MESSAGE = "pdfruk-admin-session";
 
-function getAdminSecret(): string | undefined {
-  return process.env.ADMIN_SECRET;
-}
-
 export function isAdminConfigured(): boolean {
-  return Boolean(getAdminSecret());
+  return true;
 }
 
 async function hmacSha256Hex(secret: string, message: string): Promise<string> {
@@ -32,16 +31,16 @@ async function hmacSha256Hex(secret: string, message: string): Promise<string> {
     .join("");
 }
 
-export async function getAdminSessionToken(): Promise<string | null> {
-  const secret = getAdminSecret();
-  if (!secret) return null;
-  return hmacSha256Hex(secret, SESSION_MESSAGE);
+export async function getAdminSessionToken(): Promise<string> {
+  return hmacSha256Hex(SESSION_SECRET, SESSION_MESSAGE);
 }
 
-export function verifyAdminToken(token: string | undefined): boolean {
-  const secret = getAdminSecret();
-  if (!secret || !token) return false;
-  return token === secret;
+export function verifyAdminCredentials(
+  username: string | undefined,
+  password: string | undefined,
+): boolean {
+  if (!username || !password) return false;
+  return username === ADMIN_USERNAME && password === ADMIN_PASSWORD;
 }
 
 function timingSafeEqualStrings(left: string, right: string): boolean {

@@ -294,6 +294,8 @@ export type PdfToImagesWorkerRequest = {
   buffer: ArrayBuffer;
   pdfName: string;
   options: {
-    scale: 1 | 1.5 | 2;
+    scale: 2 | 3 | 4;
+    format: "png" | "jpeg";
+    jpegQuality?: number;
   };
 };

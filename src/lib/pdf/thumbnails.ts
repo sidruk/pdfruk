@@ -3,38 +3,9 @@
 import type { PDFDocumentProxy } from "pdfjs-dist";
 
 import { THUMBNAIL_SCALE } from "@/lib/pdf/constants";
+import { loadPdfDocument } from "@/lib/pdf/pdfjs-client";
 
-type PdfJsModule = typeof import("pdfjs-dist/build/pdf.mjs");
-
-let pdfjsPromise: Promise<PdfJsModule> | null = null;
-let workerConfigured = false;
-
-async function getPdfJs(): Promise<PdfJsModule> {
-  if (typeof window === "undefined") {
-    throw new Error("PDF.js is only available in the browser.");
-  }
-
-  if (!pdfjsPromise) {
-    pdfjsPromise = import("pdfjs-dist/build/pdf.mjs");
-  }
-
-  const pdfjs = await pdfjsPromise;
-
-  if (!workerConfigured) {
-    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-    workerConfigured = true;
-  }
-
-  return pdfjs;
-}
-
-export async function loadPdfDocument(
-  data: ArrayBuffer,
-): Promise<PDFDocumentProxy> {
-  const pdfjs = await getPdfJs();
-  const loadingTask = pdfjs.getDocument({ data });
-  return loadingTask.promise;
-}
+export { loadPdfDocument };
 
 export async function renderPageThumbnail(
   pdf: PDFDocumentProxy,

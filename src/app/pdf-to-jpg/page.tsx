@@ -10,11 +10,13 @@ export default function PdfToJpgPage() {
   const {
     file,
     scale,
+    format,
     isProcessing,
     progress,
     result,
     addFile,
     setScale,
+    setFormat,
     process,
     reset,
     canProcess,
@@ -48,8 +50,10 @@ export default function PdfToJpgPage() {
           </div>
           <PdfToImagesOptions
             scale={scale}
+            format={format}
             disabled={isProcessing}
             onScaleChange={setScale}
+            onFormatChange={setFormat}
           />
         </div>
       ) : null}

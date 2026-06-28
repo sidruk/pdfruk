@@ -12,7 +12,14 @@ export async function middleware(request: NextRequest) {
   if (pathname.startsWith("/admin/dashboard")) {
     const session = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
     if (!(await verifyAdminSession(session))) {
-      return NextResponse.redirect(new URL("/", request.url));
+      return NextResponse.redirect(new URL("/admin/login", request.url));
+    }
+  }
+
+  if (pathname === "/admin/login") {
+    const session = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    if (await verifyAdminSession(session)) {
+      return NextResponse.redirect(new URL("/admin/dashboard", request.url));
     }
   }
 
