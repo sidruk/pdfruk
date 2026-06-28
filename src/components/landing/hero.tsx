@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDown, Combine, Minimize2, Scissors } from "lucide-react";
+import { ArrowDown, Combine, FileImage, Scissors } from "lucide-react";
 
 import { HeroVisual } from "@/components/landing/hero-visual";
 import { PrivacyBadge } from "@/components/tools/privacy-badge";
@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 const QUICK_LINKS = [
   { href: "/merge", label: "Merge", icon: Combine },
   { href: "/split", label: "Split", icon: Scissors },
-  { href: "/compress", label: "Compress", icon: Minimize2 },
+  { href: "/pdf-to-jpg", label: "PDF to Images", icon: FileImage },
 ] as const;
 
 export function Hero() {

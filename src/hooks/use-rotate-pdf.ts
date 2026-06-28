@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { getPageRotations } from "@/lib/pdf/rotate";
 import { normalizeRotation } from "@/lib/pdf/pdf-utils";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
+import { trackToolComplete } from "@/lib/analytics/track";
 import type {
   PdfFile,
   ProcessProgress,
@@ -144,6 +145,7 @@ export function useRotatePdf() {
 
       const blob = new Blob([message.data], { type: "application/pdf" });
       setResult({ blob, filename: message.filename });
+      trackToolComplete("rotate");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();

@@ -5,6 +5,7 @@ import { toast } from "sonner";
 
 import { extractFormFields } from "@/lib/pdf/forms";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
+import { trackToolComplete } from "@/lib/analytics/track";
 import type {
   PdfFile,
   PdfFormField,
@@ -148,6 +149,7 @@ export function useFillFormPdf() {
       if (message.type === "success") {
         const blob = new Blob([message.data], { type: "application/pdf" });
         setResult({ blob, filename: message.filename });
+        trackToolComplete("pdf-forms");
         setIsProcessing(false);
         setProgress(null);
         worker.terminate();

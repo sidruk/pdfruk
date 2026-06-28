@@ -33,6 +33,7 @@ type ToolShellProps = {
   dropzoneDisabled?: boolean;
   showProcessButton?: boolean;
   wide?: boolean;
+  hideIntro?: boolean;
   privacyLabel?: string;
 };
 
@@ -56,6 +57,7 @@ export function ToolShell({
   dropzoneDisabled = false,
   showProcessButton = true,
   wide = false,
+  hideIntro = false,
   privacyLabel,
 }: ToolShellProps) {
   const fileDropDisabled = dropzoneDisabled || isProcessing || !showDropzone;
@@ -66,19 +68,21 @@ export function ToolShell({
       accept={accept}
       multiple={multiple}
       disabled={fileDropDisabled}
-      className={`mx-auto flex min-h-[calc(100vh-12rem)] w-full flex-col gap-6 px-4 py-8 sm:px-6 ${
-        wide ? "max-w-[1280px]" : "max-w-4xl"
-      }`}
+      className={`mx-auto flex min-h-[calc(100vh-12rem)] w-full flex-col px-4 sm:px-6 ${
+        hideIntro ? "gap-0 py-4" : "gap-6 py-8"
+      } ${wide ? "max-w-[1280px]" : "max-w-4xl"}`}
     >
-      <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-2xl font-bold tracking-tight text-brand-charcoal sm:text-3xl">
-            {title}
-          </h1>
-          <PrivacyBadge label={privacyLabel} />
+      {hideIntro ? null : (
+        <div className="space-y-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-brand-charcoal sm:text-3xl">
+              {title}
+            </h1>
+            <PrivacyBadge label={privacyLabel} />
+          </div>
+          <p className="max-w-2xl text-base text-muted-foreground">{description}</p>
         </div>
-        <p className="max-w-2xl text-base text-muted-foreground">{description}</p>
-      </div>
+      )}
 
       {showDropzone ? (
         <FileDropzone

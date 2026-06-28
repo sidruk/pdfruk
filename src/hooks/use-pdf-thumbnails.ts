@@ -97,6 +97,8 @@ export function usePdfThumbnails(file: File | null, pageCount: number) {
       return;
     }
 
+    const renderedPages = renderedRef.current;
+    const pendingPages = pendingRef.current;
     let cancelled = false;
 
     const load = async () => {
@@ -117,8 +119,8 @@ export function usePdfThumbnails(file: File | null, pageCount: number) {
     return () => {
       cancelled = true;
       pdfRef.current = null;
-      renderedRef.current.clear();
-      pendingRef.current.clear();
+      renderedPages.clear();
+      pendingPages.clear();
       setPages((current) => {
         revokeAllThumbnails(current);
         return [];

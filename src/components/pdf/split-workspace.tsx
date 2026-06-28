@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import {
   ArrowRight,
   Archive,
@@ -209,32 +209,35 @@ export function SplitWorkspace({
   const getThumbnailUrl = (pageIndex: number) =>
     pages.find((page) => page.pageIndex === pageIndex)?.thumbnailUrl;
 
-  const previewEntries: Array<PageRangeEntry & { label?: string }> =
-    tab === "range" && rangeMode !== "smart"
-      ? rangeEntries.map((entry, index) => ({
-          ...entry,
-          label: `Range ${index + 1}`,
-        }))
-      : tab === "pages" && selectedPages.length > 0
-        ? selectedPages.map((pageIndex, index) => ({
-            id: `page-${pageIndex}`,
-            from: pageIndex + 1,
-            to: pageIndex + 1,
-            label: `Page ${index + 1}`,
+  const previewEntries: Array<PageRangeEntry & { label?: string }> = useMemo(
+    () =>
+      tab === "range" && rangeMode !== "smart"
+        ? rangeEntries.map((entry, index) => ({
+            ...entry,
+            label: `Range ${index + 1}`,
           }))
-        : rangeEntries.length > 0
-          ? rangeEntries.map((entry, index) => ({
-              ...entry,
-              label: `Range ${index + 1}`,
+        : tab === "pages" && selectedPages.length > 0
+          ? selectedPages.map((pageIndex, index) => ({
+              id: `page-${pageIndex}`,
+              from: pageIndex + 1,
+              to: pageIndex + 1,
+              label: `Page ${index + 1}`,
             }))
-          : [
-              {
-                id: "default",
-                from: 1,
-                to: file.pageCount,
-                label: "Range 1",
-              },
-            ];
+          : rangeEntries.length > 0
+            ? rangeEntries.map((entry, index) => ({
+                ...entry,
+                label: `Range ${index + 1}`,
+              }))
+            : [
+                {
+                  id: "default",
+                  from: 1,
+                  to: file.pageCount,
+                  label: "Range 1",
+                },
+              ],
+    [tab, rangeMode, rangeEntries, selectedPages, file.pageCount],
+  );
 
   useEffect(() => {
     if (isLoading) return;

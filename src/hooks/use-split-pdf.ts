@@ -12,6 +12,7 @@ import {
   type PageRangeEntry,
 } from "@/lib/pdf/range-entries";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
+import { trackToolComplete } from "@/lib/analytics/track";
 import type {
   PdfFile,
   ProcessProgress,
@@ -219,6 +220,7 @@ export function useSplitPdf() {
         type: message.contentType ?? "application/pdf",
       });
       setResult({ blob, filename: message.filename });
+      trackToolComplete("split");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();

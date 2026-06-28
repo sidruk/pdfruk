@@ -242,6 +242,8 @@ export function CropOverlay({
     },
   ];
 
+  const hasSelection = !isFullPageCrop(cropRect);
+
   return (
     <div
       ref={containerRef}
@@ -255,39 +257,34 @@ export function CropOverlay({
       onPointerUp={handlePointerUp}
       onPointerCancel={finishDrag}
     >
-      <div
-        className="absolute border-2 border-white bg-white/5 shadow-[0_0_0_9999px_rgba(55,65,81,0.45)]"
-        style={{
-          left,
-          top,
-          width,
-          height,
-        }}
-        onPointerDown={(event) => {
-          if (isFullPageCrop(cropRect)) {
-            handlePointerDown(event, "create");
-            return;
-          }
-
-          handlePointerDown(event, "move");
-        }}
-      >
-        {!disabled
-          ? handles.map((handle) => (
-              <button
-                key={handle.mode}
-                type="button"
-                aria-label={handle.label}
-                className={cn(
-                  "absolute z-10 rounded-full border-2 border-white bg-blue-500 shadow-sm",
-                  handle.className,
-                )}
-                style={{ width: HANDLE_SIZE, height: HANDLE_SIZE }}
-                onPointerDown={(event) => handlePointerDown(event, handle.mode)}
-              />
-            ))
-          : null}
-      </div>
+      {hasSelection ? (
+        <div
+          className="absolute border-2 border-white bg-white/5 shadow-[0_0_0_9999px_rgba(55,65,81,0.45)]"
+          style={{
+            left,
+            top,
+            width,
+            height,
+          }}
+          onPointerDown={(event) => handlePointerDown(event, "move")}
+        >
+          {!disabled
+            ? handles.map((handle) => (
+                <button
+                  key={handle.mode}
+                  type="button"
+                  aria-label={handle.label}
+                  className={cn(
+                    "absolute z-10 rounded-full border-2 border-white bg-blue-500 shadow-sm",
+                    handle.className,
+                  )}
+                  style={{ width: HANDLE_SIZE, height: HANDLE_SIZE }}
+                  onPointerDown={(event) => handlePointerDown(event, handle.mode)}
+                />
+              ))
+            : null}
+        </div>
+      ) : null}
     </div>
   );
 }

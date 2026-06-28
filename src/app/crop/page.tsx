@@ -3,6 +3,9 @@
 import { PDF_ACCEPT } from "@/lib/pdf/constants";
 
 import { CropWorkspace } from "@/components/pdf/crop-workspace";
+import { DownloadResult } from "@/components/tools/download-result";
+import { ProcessButton } from "@/components/tools/process-button";
+import { ProgressBar } from "@/components/tools/progress-bar";
 import { ToolShell } from "@/components/tools/tool-shell";
 import { useCropPdf } from "@/hooks/use-crop-pdf";
 
@@ -47,9 +50,21 @@ export default function CropPage() {
       processLabel="Crop PDF"
       dropzoneDisabled={isProcessing}
       wide={!!file}
+      hideIntro={!!file}
     >
       {file ? (
-        <CropWorkspace
+        <>
+          <div className="mb-4 flex flex-col gap-4">
+            <ProcessButton
+              onProcess={() => void process()}
+              disabled={!canProcess}
+              isProcessing={isProcessing}
+              label="Crop PDF"
+            />
+            {progress && isProcessing ? <ProgressBar progress={progress} /> : null}
+            {result ? <DownloadResult result={result} onReset={reset} /> : null}
+          </div>
+          <CropWorkspace
           file={file}
           currentPage={currentPage}
           zoom={zoom}
@@ -69,6 +84,7 @@ export default function CropPage() {
           onProcess={() => void process()}
           onReset={reset}
         />
+        </>
       ) : null}
     </ToolShell>
   );

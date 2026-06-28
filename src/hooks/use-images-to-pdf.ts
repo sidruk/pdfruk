@@ -8,6 +8,7 @@ import {
   imageValidationErrorMessage,
   validateImageFile,
 } from "@/lib/pdf/validate-image";
+import { trackToolComplete } from "@/lib/analytics/track";
 import type {
   ImageFile,
   ImagesToPdfWorkerRequest,
@@ -156,6 +157,7 @@ export function useImagesToPdf() {
 
       const blob = new Blob([message.data], { type: "application/pdf" });
       setResult({ blob, filename: message.filename });
+      trackToolComplete("jpg-to-pdf");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();

@@ -35,6 +35,7 @@ export type ToolDefinition = {
   category: ToolCategory;
   status: ToolStatus;
   requiresServer?: boolean;
+  hidden?: boolean;
 };
 
 export const TOOL_CATEGORIES: ToolCategory[] = [
@@ -97,7 +98,7 @@ export const TOOLS: ToolDefinition[] = [
     href: "/pdf-to-jpg",
     icon: FileImage,
     category: "Convert",
-    status: "coming-soon",
+    status: "live",
   },
   {
     id: "pdf-to-word",
@@ -173,6 +174,7 @@ export const TOOLS: ToolDefinition[] = [
     category: "Edit",
     status: "live",
     requiresServer: true,
+    hidden: true,
   },
   {
     id: "protect",
@@ -194,8 +196,16 @@ export const TOOLS: ToolDefinition[] = [
   },
 ];
 
+export function isToolVisible(tool: ToolDefinition): boolean {
+  return !tool.hidden;
+}
+
+export function getVisibleTools(): ToolDefinition[] {
+  return TOOLS.filter(isToolVisible);
+}
+
 export function getToolsByCategory(category: ToolCategory): ToolDefinition[] {
-  return TOOLS.filter((tool) => tool.category === category);
+  return getVisibleTools().filter((tool) => tool.category === category);
 }
 
 export function getToolByHref(href: string): ToolDefinition | undefined {

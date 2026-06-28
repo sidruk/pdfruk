@@ -431,10 +431,7 @@ function TextAnnotationView({
           width={width}
           height={Math.max(contentHeight, annotation.fontSize + 8)}
         >
-          <div
-            xmlns="http://www.w3.org/1999/xhtml"
-            className="h-full w-full"
-          >
+          <div className="h-full w-full">
             <textarea
               ref={textareaRef}
               autoFocus={isPlaceholder}

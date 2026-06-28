@@ -28,7 +28,6 @@ const PRIMARY_LINKS = [
   { label: "Merge PDF", href: "/merge" },
   { label: "Split PDF", href: "/split" },
   { label: "Edit PDF", href: "/edit-pdf" },
-  { label: "Compress PDF", href: "/compress" },
 ] as const;
 
 const CONVERT_TOOLS = getToolsByCategory("Convert");

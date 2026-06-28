@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { inspectPdfFile, validationErrorMessage } from "@/lib/pdf/validate";
+import { trackToolComplete } from "@/lib/analytics/track";
 import { renderPdfFilePageToDataUrl } from "@/lib/pdf/thumbnails";
 import type {
   EditAnnotation,
@@ -370,6 +371,7 @@ export function useEditPdf() {
       const blob = new Blob([message.data], { type: "application/pdf" });
       const baseName = file.name.replace(/\.pdf$/i, "");
       setResult({ blob, filename: `${baseName}-edited.pdf` });
+      trackToolComplete("edit-pdf");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();

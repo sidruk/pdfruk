@@ -5,7 +5,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { TOOLS } from "@/config/tools";
 import { cn } from "@/lib/utils";
 
-const POPULAR_TOOL_IDS = ["merge", "split", "compress"] as const;
+const POPULAR_TOOL_IDS = ["merge", "split", "pdf-to-jpg"] as const;
 
 export function PopularTools() {
   const popularTools = POPULAR_TOOL_IDS.map((id) =>

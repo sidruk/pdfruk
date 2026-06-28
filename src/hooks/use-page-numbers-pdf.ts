@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
+import { trackToolComplete } from "@/lib/analytics/track";
 import type {
   PageNumberOptions,
   PageNumberPosition,
@@ -131,6 +132,7 @@ export function usePageNumbersPdf() {
 
       const blob = new Blob([message.data], { type: "application/pdf" });
       setResult({ blob, filename: message.filename });
+      trackToolComplete("page-numbers");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();

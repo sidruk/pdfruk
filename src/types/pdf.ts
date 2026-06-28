@@ -288,3 +288,12 @@ export type FillFormWorkerRequest = {
   buffer: ArrayBuffer;
   options: FillFormOptions;
 };
+
+export type PdfToImagesWorkerRequest = {
+  type: "pdf-to-jpg";
+  buffer: ArrayBuffer;
+  pdfName: string;
+  options: {
+    scale: 1 | 1.5 | 2;
+  };
+};

@@ -10,7 +10,8 @@ import {
   isValidCropRect,
 } from "@/lib/pdf/crop-utils";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
-import type {
+import { trackToolComplete } from "@/lib/analytics/track";
+  import type {
   CropPageScope,
   CropRect,
   PdfFile,
@@ -176,12 +177,12 @@ export function useCropPdf() {
   }, []);
 
   const zoomOut = useCallback(() => {
-    setZoom((current) => Math.max(current - 0.25, 0.5));
+    setZoom((current) => Math.max(current - 0.25, 0.1));
   }, []);
 
   const fitToWidth = useCallback((targetZoom: number) => {
     if (!Number.isFinite(targetZoom) || targetZoom <= 0) return;
-    setZoom(Math.max(0.5, Math.min(targetZoom, 3)));
+    setZoom(Math.max(0.1, Math.min(targetZoom, 3)));
   }, []);
 
   const hasValidCrop = useCallback((): boolean => {
@@ -261,6 +262,7 @@ export function useCropPdf() {
 
       const blob = new Blob([message.data], { type: "application/pdf" });
       setResult({ blob, filename: message.filename });
+      trackToolComplete("crop");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import {
   ArrowRight,
   ChevronDown,
@@ -47,6 +47,35 @@ type CropWorkspaceProps = {
 };
 
 const BASE_SCALE = 1.5;
+const MIN_ZOOM = 0.1;
+
+function getFitZoom(
+  container: HTMLElement,
+  renderWidth: number,
+  renderHeight: number,
+  zoom: number,
+): number | null {
+  const style = window.getComputedStyle(container);
+  const availableWidth =
+    container.clientWidth -
+    parseFloat(style.paddingLeft) -
+    parseFloat(style.paddingRight);
+  const availableHeight =
+    container.clientHeight -
+    parseFloat(style.paddingTop) -
+    parseFloat(style.paddingBottom);
+
+  if (availableWidth <= 0 || availableHeight <= 0 || zoom <= 0) return null;
+
+  const baseWidth = renderWidth / zoom;
+  const baseHeight = renderHeight / zoom;
+  const targetZoom = Math.min(
+    availableWidth / baseWidth,
+    availableHeight / baseHeight,
+  );
+
+  return Math.max(MIN_ZOOM, Math.min(targetZoom, 3));
+}
 
 function ScopeOption({
   id,
@@ -104,27 +133,43 @@ export function CropWorkspace({
   onReset,
 }: CropWorkspaceProps) {
   const viewerContainerRef = useRef<HTMLDivElement>(null);
+  const autoFitPageRef = useRef<number | null>(null);
   const { render, isLoading: isPageLoading } = usePdfPageView(
     file.file,
     currentPage,
     BASE_SCALE * zoom,
   );
 
-  const handleFitToWidth = useCallback(() => {
+  const handleFitToPage = useCallback(() => {
     const container = viewerContainerRef.current;
     if (!container || !render || zoom <= 0) return;
 
-    const style = window.getComputedStyle(container);
-    const availableWidth =
-      container.clientWidth -
-      parseFloat(style.paddingLeft) -
-      parseFloat(style.paddingRight);
-
-    if (availableWidth <= 0) return;
-
-    const pageWidthAtBaseScale = render.width / zoom;
-    onFitToWidth(availableWidth / pageWidthAtBaseScale);
+    const targetZoom = getFitZoom(
+      container,
+      render.width,
+      render.height,
+      zoom,
+    );
+    if (targetZoom !== null) {
+      onFitToWidth(targetZoom);
+    }
   }, [onFitToWidth, render, zoom]);
+
+  useEffect(() => {
+    autoFitPageRef.current = null;
+  }, [file.id]);
+
+  useEffect(() => {
+    if (!render || isPageLoading) return;
+    if (autoFitPageRef.current === currentPage) return;
+
+    autoFitPageRef.current = currentPage;
+    const frame = requestAnimationFrame(() => {
+      handleFitToPage();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [currentPage, handleFitToPage, isPageLoading, render]);
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -132,7 +177,7 @@ export function CropWorkspace({
         <div className="relative flex min-h-[420px] min-w-0 flex-1 flex-col bg-[#e8eaed]">
           <div
             ref={viewerContainerRef}
-            className="flex flex-1 items-start justify-center overflow-auto p-4 sm:p-6"
+            className="flex min-h-0 flex-1 items-center justify-center overflow-auto p-4 sm:p-6"
           >
             {isPageLoading && !render ? (
               <p className="text-sm text-gray-500">Loading page...</p>
@@ -225,7 +270,7 @@ export function CropWorkspace({
               type="button"
               aria-label="Fit to width"
               disabled={!render || isProcessing}
-              onClick={handleFitToWidth}
+              onClick={handleFitToPage}
               className="rounded px-2 py-1.5 text-xs hover:bg-white/10 disabled:opacity-40"
             >
               Fit

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { compressedFilename } from "@/lib/pdf/compress-presets";
+import { trackToolComplete } from "@/lib/analytics/track";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
 import type {
   CompressPreset,
@@ -112,6 +113,7 @@ export function useCompressPdf() {
           compressedSize,
         },
       });
+      trackToolComplete("compress");
     } catch {
       const message = "Compression failed unexpectedly. Please try again.";
       setError(message);

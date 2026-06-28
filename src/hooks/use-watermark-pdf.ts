@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
+import { trackToolComplete } from "@/lib/analytics/track";
 import type {
   PdfFile,
   ProcessProgress,
@@ -143,6 +144,7 @@ export function useWatermarkPdf() {
 
       const blob = new Blob([message.data], { type: "application/pdf" });
       setResult({ blob, filename: message.filename });
+      trackToolComplete("watermark");
       setIsProcessing(false);
       setProgress(null);
       worker.terminate();
