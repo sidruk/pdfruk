@@ -39,8 +39,6 @@ export default function SplitPage() {
       accept={PDF_ACCEPT}
       multiple={false}
       onFilesAccepted={(accepted) => void addFile(accepted)}
-      dropzoneLabel="Drop a PDF file here"
-      dropzoneDescription="One PDF at a time — or select a file below"
       showDropzone={!file}
       showProcessButton={!file}
       canProcess={canProcess}

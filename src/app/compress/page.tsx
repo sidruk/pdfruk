@@ -24,12 +24,10 @@ export default function CompressPage() {
   return (
     <ToolShell
       title="Compress PDF"
-      description="Reduce file size by re-encoding pages as compressed images. All processing happens in your browser."
+      description="Reduce file size with Ghostscript and pikepdf. Files are processed on the server and deleted immediately after compression."
       accept={PDF_ACCEPT}
       multiple={false}
       onFilesAccepted={(accepted) => void addFile(accepted)}
-      dropzoneLabel="Drop a PDF file here"
-      dropzoneDescription="One PDF at a time — or select a file below"
       showDropzone={!file}
       canProcess={canProcess}
       onProcess={() => void process()}
@@ -39,6 +37,7 @@ export default function CompressPage() {
       onReset={reset}
       processLabel="Compress PDF"
       dropzoneDisabled={isProcessing}
+      privacyLabel="Processed securely, not stored"
     >
       {file ? (
         <CompressOptions

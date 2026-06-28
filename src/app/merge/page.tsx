@@ -27,8 +27,6 @@ export default function MergePage() {
       accept={PDF_ACCEPT}
       multiple
       onFilesAccepted={(accepted) => void addFiles(accepted)}
-      dropzoneLabel="Drop PDF files here"
-      dropzoneDescription="Add two or more PDFs to merge — or select files below"
       canProcess={canProcess}
       onProcess={() => void process()}
       isProcessing={isProcessing}

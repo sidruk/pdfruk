@@ -19,8 +19,8 @@ type ToolShellProps = {
   accept?: Accept;
   multiple?: boolean;
   onFilesAccepted: (files: File[]) => void;
-  dropzoneLabel?: string;
-  dropzoneDescription?: string;
+  dropzoneHint?: string;
+  dropzoneSelectLabel?: string;
   showDropzone?: boolean;
   children?: ReactNode;
   canProcess: boolean;
@@ -33,6 +33,7 @@ type ToolShellProps = {
   dropzoneDisabled?: boolean;
   showProcessButton?: boolean;
   wide?: boolean;
+  privacyLabel?: string;
 };
 
 export function ToolShell({
@@ -41,8 +42,8 @@ export function ToolShell({
   accept,
   multiple = true,
   onFilesAccepted,
-  dropzoneLabel,
-  dropzoneDescription,
+  dropzoneHint,
+  dropzoneSelectLabel,
   showDropzone = true,
   children,
   canProcess,
@@ -55,6 +56,7 @@ export function ToolShell({
   dropzoneDisabled = false,
   showProcessButton = true,
   wide = false,
+  privacyLabel,
 }: ToolShellProps) {
   const fileDropDisabled = dropzoneDisabled || isProcessing || !showDropzone;
 
@@ -65,7 +67,7 @@ export function ToolShell({
       multiple={multiple}
       disabled={fileDropDisabled}
       className={`mx-auto flex min-h-[calc(100vh-12rem)] w-full flex-col gap-6 px-4 py-8 sm:px-6 ${
-        wide ? "max-w-6xl" : "max-w-4xl"
+        wide ? "max-w-[1280px]" : "max-w-4xl"
       }`}
     >
       <div className="space-y-3">
@@ -73,16 +75,17 @@ export function ToolShell({
           <h1 className="text-2xl font-bold tracking-tight text-brand-charcoal sm:text-3xl">
             {title}
           </h1>
-          <PrivacyBadge />
+          <PrivacyBadge label={privacyLabel} />
         </div>
         <p className="max-w-2xl text-base text-muted-foreground">{description}</p>
       </div>
 
       {showDropzone ? (
         <FileDropzone
-          label={dropzoneLabel}
-          description={dropzoneDescription}
-          selectLabel={multiple ? "Select files" : "Select file"}
+          hint={dropzoneHint}
+          selectLabel={
+            dropzoneSelectLabel ?? (multiple ? "Choose files" : "Choose file")
+          }
         />
       ) : null}
 

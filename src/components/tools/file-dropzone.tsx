@@ -9,7 +9,12 @@ import {
 } from "react";
 import { useDropzone, type Accept } from "react-dropzone";
 
-import { Button } from "@/components/ui/button";
+import {
+  DropzoneChooseButton,
+  DropzoneFileIcons,
+  DropzoneHint,
+  DropzoneSurface,
+} from "@/components/tools/dropzone-content";
 import { cn } from "@/lib/utils";
 
 type FileDropzoneOptions = {
@@ -79,16 +84,15 @@ export function FileDropzoneProvider({
         {isDragActive && !disabled ? (
           <div
             className={cn(
-              "pointer-events-none absolute inset-0 z-20 flex items-center justify-center rounded-xl border-2 border-dashed transition-colors",
-              isDragReject
-                ? "border-destructive bg-destructive/10"
-                : "border-primary bg-primary/10",
+              "pointer-events-none absolute inset-0 z-20 flex items-center justify-center overflow-hidden rounded-xl transition-colors",
+              isDragReject ? "bg-destructive" : "bg-brand-red-hover",
             )}
             aria-hidden
           >
-            <div className="flex flex-col items-center gap-2 px-6 text-center">
-              <Upload className="h-10 w-10 text-primary" />
-              <p className="text-base font-semibold">
+            <div className="absolute inset-3 rounded-lg border-2 border-dashed border-white/60" />
+            <div className="relative flex flex-col items-center gap-2 px-6 text-center">
+              <Upload className="h-10 w-10 text-white" />
+              <p className="text-base font-semibold text-white">
                 {isDragReject ? "Unsupported file type" : "Drop files to upload"}
               </p>
             </div>
@@ -101,41 +105,30 @@ export function FileDropzoneProvider({
 }
 
 type FileDropzoneProps = {
-  label?: string;
-  description?: string;
+  hint?: string;
   selectLabel?: string;
 };
 
 export function FileDropzone({
-  label = "Drop files here",
-  description = "or select files from your device",
-  selectLabel = "Select files",
+  hint = "or drop files here",
+  selectLabel = "Choose files",
 }: FileDropzoneProps) {
   const { open, isDragActive, isDragReject, disabled } =
     useFileDropzoneContext();
 
   return (
-    <div
-      className={cn(
-        "flex min-h-40 flex-col items-center justify-center rounded-xl border-2 border-dashed px-6 py-10 text-center transition-colors",
-        isDragActive && !isDragReject && "border-primary bg-primary/5",
-        isDragReject && "border-destructive bg-destructive/5",
-        disabled && "opacity-60",
-        !isDragActive && !isDragReject && "border-border",
-      )}
+    <DropzoneSurface
+      disabled={disabled}
+      isDragActive={isDragActive}
+      isDragReject={isDragReject}
     >
-      <Upload className="mb-3 h-10 w-10 text-muted-foreground" aria-hidden />
-      <p className="text-base font-semibold">{label}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{description}</p>
-      <Button
-        type="button"
-        size="lg"
-        className="mt-4 bg-brand-red text-base hover:bg-brand-red-hover"
+      <DropzoneFileIcons />
+      <DropzoneChooseButton
         onClick={open}
         disabled={disabled}
-      >
-        {selectLabel}
-      </Button>
-    </div>
+        label={selectLabel}
+      />
+      <DropzoneHint>{hint}</DropzoneHint>
+    </DropzoneSurface>
   );
 }

@@ -282,10 +282,6 @@ export function SplitWorkspace({
 
         {/* Controls sidebar */}
         <div className="flex w-full min-w-0 flex-col border-t border-gray-200 lg:w-[380px] lg:shrink-0 lg:border-l lg:border-t-0">
-          <div className="border-b border-gray-100 px-6 py-5 text-center">
-            <h2 className="text-xl font-bold text-brand-charcoal">Split</h2>
-          </div>
-
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-4">
             <div className="mb-5 flex gap-2">
               {TABS.map((tabItem) => (

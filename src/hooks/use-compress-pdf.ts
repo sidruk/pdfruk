@@ -1,18 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
-import {
-  compressedFilename,
-} from "@/lib/pdf/compress-presets";
+import { compressedFilename } from "@/lib/pdf/compress-presets";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
 import type {
   CompressPreset,
   PdfFile,
   ProcessProgress,
   ProcessResult,
-  WorkerMessage,
 } from "@/types/pdf";
 
 function createFileId(): string {
@@ -26,13 +23,6 @@ export function useCompressPdf() {
   const [progress, setProgress] = useState<ProcessProgress | null>(null);
   const [result, setResult] = useState<ProcessResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const workerRef = useRef<Worker | null>(null);
-
-  useEffect(() => {
-    return () => {
-      workerRef.current?.terminate();
-    };
-  }, []);
 
   const addFile = useCallback(async (incoming: File[]) => {
     const nextFile = incoming[0];
@@ -63,8 +53,6 @@ export function useCompressPdf() {
   }, []);
 
   const reset = useCallback(() => {
-    workerRef.current?.terminate();
-    workerRef.current = null;
     setFile(null);
     setPreset("medium");
     setIsProcessing(false);
@@ -80,72 +68,58 @@ export function useCompressPdf() {
     }
 
     setIsProcessing(true);
-    setProgress({ current: 0, total: file.pageCount, message: "Starting compression..." });
+    setProgress({
+      current: 0,
+      total: 1,
+      message: "Uploading and compressing PDF...",
+    });
     setError(null);
     setResult(null);
 
-    workerRef.current?.terminate();
-    const worker = new Worker(
-      new URL("../workers/compress-pdf.worker.ts", import.meta.url),
-    );
-    workerRef.current = worker;
+    const formData = new FormData();
+    formData.append("file", file.file, file.name);
+    formData.append("preset", preset);
 
-    const buffer = await file.file.arrayBuffer();
+    try {
+      const response = await fetch("/api/compress", {
+        method: "POST",
+        body: formData,
+      });
 
-    worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
-      const message = event.data;
-
-      if (message.type === "progress") {
-        setProgress({
-          current: message.current,
-          total: message.total,
-          message: message.message,
-        });
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as
+          | { error?: string }
+          | null;
+        const message = payload?.error ?? "Failed to compress PDF.";
+        setError(message);
+        toast.error(message);
         return;
       }
 
-      if (message.type === "error") {
-        setError(message.message);
-        toast.error(message.message);
-        setIsProcessing(false);
-        setProgress(null);
-        worker.terminate();
-        workerRef.current = null;
-        return;
-      }
+      const blob = await response.blob();
+      const originalSize = Number(
+        response.headers.get("X-Original-Size") ?? file.file.size,
+      );
+      const compressedSize = Number(
+        response.headers.get("X-Compressed-Size") ?? blob.size,
+      );
 
-      const blob = new Blob([message.data], { type: "application/pdf" });
       setResult({
         blob,
-        filename: message.filename || compressedFilename(file.name),
-        metadata: message.metadata,
+        filename: compressedFilename(file.name),
+        metadata: {
+          originalSize,
+          compressedSize,
+        },
       });
-      setIsProcessing(false);
-      setProgress(null);
-      worker.terminate();
-      workerRef.current = null;
-    };
-
-    worker.onerror = () => {
+    } catch {
       const message = "Compression failed unexpectedly. Please try again.";
       setError(message);
       toast.error(message);
+    } finally {
       setIsProcessing(false);
       setProgress(null);
-      worker.terminate();
-      workerRef.current = null;
-    };
-
-    worker.postMessage(
-      {
-        type: "compress",
-        buffer,
-        preset,
-        originalName: file.name,
-        originalSize: file.file.size,
-      },
-      [buffer],
-    );
+    }
   }, [file, preset]);
 
   return {

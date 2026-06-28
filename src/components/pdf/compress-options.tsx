@@ -55,8 +55,8 @@ export function CompressOptions({
         <div>
           <h2 className="text-sm font-medium">Compression level</h2>
           <p className="text-sm text-muted-foreground">
-            Pages are re-encoded as JPEG images. Text and links will not remain
-            selectable.
+            Ghostscript recompresses images and fonts. Selectable text is
+            preserved when possible.
           </p>
         </div>
 
