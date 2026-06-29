@@ -379,3 +379,7 @@ export function getToolsByCategory(category: ToolCategory): ToolDefinition[] {
 export function getToolByHref(href: string): ToolDefinition | undefined {
   return TOOLS.find((tool) => tool.href === href);
 }
+
+export function getToolById(id: string): ToolDefinition | undefined {
+  return TOOLS.find((tool) => tool.id === id);
+}

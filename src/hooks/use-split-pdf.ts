@@ -157,8 +157,6 @@ export function useSplitPdf() {
   const canProcess =
     !!file &&
     !isProcessing &&
-    tab !== "size" &&
-    rangeMode !== "smart" &&
     ((tab === "range" &&
       hasValidRanges(rangeEntries, file.pageCount)) ||
       (tab === "pages" && selectedPages.length > 0));

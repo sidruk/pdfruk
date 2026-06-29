@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowRight,
   Archive,
   Check,
-  Crown,
   FileText,
   Info,
   Loader2,
   Plus,
   ScanLine,
-  Sparkles,
   SquareStack,
-  Scaling,
   Trash2,
 } from "lucide-react";
 
@@ -57,10 +54,9 @@ type SplitWorkspaceProps = {
   onReset: () => void;
 };
 
-const TABS: { id: SplitTab; label: string; icon: typeof ScanLine; premium?: boolean }[] = [
+const TABS: { id: SplitTab; label: string; icon: typeof ScanLine }[] = [
   { id: "range", label: "Range", icon: ScanLine },
   { id: "pages", label: "Pages", icon: SquareStack },
-  { id: "size", label: "Size", icon: Scaling, premium: true },
 ];
 
 function RangePageInput({
@@ -78,6 +74,15 @@ function RangePageInput({
   disabled?: boolean;
   onChange: (value: number) => void;
 }) {
+  const [draft, setDraft] = useState(String(value));
+  const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (!isFocused) {
+      setDraft(String(value));
+    }
+  }, [value, isFocused]);
+
   return (
     <div className="flex-1">
       <label
@@ -92,9 +97,24 @@ function RangePageInput({
         inputMode="numeric"
         autoComplete="off"
         maxLength={String(pageCount).length}
-        value={value}
+        value={isFocused ? draft : String(value)}
+        onFocus={() => {
+          setIsFocused(true);
+          setDraft(String(value));
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          const parsed = parsePageInput(draft, pageCount);
+          if (parsed !== null) {
+            onChange(parsed);
+          } else {
+            setDraft(String(value));
+          }
+        }}
         onChange={(event) => {
-          const parsed = parsePageInput(event.target.value, pageCount);
+          const next = event.target.value.replace(/\D/g, "");
+          setDraft(next);
+          const parsed = parsePageInput(next, pageCount);
           if (parsed !== null) {
             onChange(parsed);
           }
@@ -133,9 +153,6 @@ function TabButton({
           <Check className="h-3 w-3 text-white" strokeWidth={3} />
         </span>
       ) : null}
-      {tab.premium ? (
-        <Crown className="absolute right-1 top-1 h-3.5 w-3.5 text-amber-500" />
-      ) : null}
       <Icon
         className={cn("h-7 w-7", active ? "text-gray-700" : "text-gray-400")}
         strokeWidth={1.5}
@@ -155,12 +172,10 @@ function TabButton({
 function RangeModeButton({
   label,
   active,
-  icon,
   onClick,
 }: {
   label: string;
   active: boolean;
-  icon?: React.ReactNode;
   onClick: () => void;
 }) {
   return (
@@ -174,7 +189,6 @@ function RangeModeButton({
           : "border border-transparent bg-gray-100 text-gray-500 hover:bg-gray-200/70",
       )}
     >
-      {icon}
       {label}
     </button>
   );
@@ -211,7 +225,7 @@ export function SplitWorkspace({
 
   const previewEntries: Array<PageRangeEntry & { label?: string }> = useMemo(
     () =>
-      tab === "range" && rangeMode !== "smart"
+      tab === "range"
         ? rangeEntries.map((entry, index) => ({
             ...entry,
             label: `Range ${index + 1}`,
@@ -314,22 +328,10 @@ export function SplitWorkspace({
                       active={rangeMode === "fixed"}
                       onClick={() => onRangeModeChange("fixed")}
                     />
-                    <RangeModeButton
-                      label="Smart"
-                      active={rangeMode === "smart"}
-                      icon={<Sparkles className="h-3.5 w-3.5" />}
-                      onClick={() => onRangeModeChange("smart")}
-                    />
                   </div>
                 </div>
 
-                {rangeMode === "smart" ? (
-                  <div className="rounded-lg bg-split-panel px-4 py-6 text-center text-sm text-gray-500">
-                    <Sparkles className="mx-auto mb-2 h-6 w-6 text-amber-500" />
-                    Smart split analyzes your document to suggest optimal
-                    ranges. Coming soon.
-                  </div>
-                ) : rangeMode === "fixed" ? (
+                {rangeMode === "fixed" ? (
                   <div className="space-y-4">
                     <div className="flex items-center justify-between gap-3">
                       <label
@@ -433,7 +435,7 @@ export function SplitWorkspace({
                   </div>
                 )}
 
-                {rangeMode !== "smart" && rangeEntries.length > 1 ? (
+                {rangeEntries.length > 1 ? (
                   <div className="space-y-3">
                     <div
                       className={cn(
@@ -518,17 +520,6 @@ export function SplitWorkspace({
               </div>
             ) : null}
 
-            {tab === "size" ? (
-              <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-split-panel px-4 py-8 text-center">
-                <Crown className="mb-3 h-8 w-8 text-amber-500" />
-                <p className="text-sm font-medium text-gray-700">
-                  Split by file size
-                </p>
-                <p className="mt-1 text-xs text-gray-500">
-                  Premium feature — coming soon.
-                </p>
-              </div>
-            ) : null}
           </div>
 
           <div className="min-w-0 space-y-3 border-t border-gray-100 px-5 py-4">
@@ -540,7 +531,7 @@ export function SplitWorkspace({
             <button
               type="button"
               onClick={onProcess}
-              disabled={!canProcess || isProcessing || tab === "size"}
+              disabled={!canProcess || isProcessing}
               className="flex w-full items-center justify-center gap-3 rounded-md bg-split-red px-6 py-3.5 text-sm font-bold uppercase tracking-wide text-white transition-colors hover:bg-split-red-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isProcessing ? (

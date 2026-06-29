@@ -1,10 +1,17 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 
+import { ToolSeoContentBlock } from "@/components/seo/tool-seo-content";
 import { getToolByHref } from "@/config/tools";
 
 import { JsonLd } from "./json-ld";
-import { buildToolJsonLd, buildToolMetadata } from "./metadata";
+import {
+  buildFaqJsonLd,
+  buildHowToJsonLd,
+  buildToolJsonLd,
+  buildToolMetadata,
+} from "./metadata";
+import { getToolSeoContent } from "./tool-content";
 
 export function createToolRoute(href: string) {
   const tool = getToolByHref(href);
@@ -14,13 +21,25 @@ export function createToolRoute(href: string) {
   }
 
   const resolvedTool = tool;
+  const seoContent = getToolSeoContent(resolvedTool.id);
   const metadata: Metadata = buildToolMetadata(resolvedTool);
 
   function ToolRouteLayout({ children }: { children: ReactNode }) {
+    const jsonLd = [
+      buildToolJsonLd(resolvedTool),
+      ...(seoContent
+        ? [
+            buildHowToJsonLd(resolvedTool, seoContent),
+            buildFaqJsonLd(seoContent.faqs),
+          ]
+        : []),
+    ];
+
     return (
       <>
-        <JsonLd data={buildToolJsonLd(resolvedTool)} />
+        <JsonLd data={jsonLd} />
         {children}
+        {seoContent ? <ToolSeoContentBlock content={seoContent} /> : null}
       </>
     );
   }

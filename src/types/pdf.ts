@@ -21,9 +21,9 @@ export type PdfPage = {
 
 export type SplitMode = "range" | "extract";
 
-export type SplitTab = "range" | "pages" | "size";
+export type SplitTab = "range" | "pages";
 
-export type RangeMode = "custom" | "fixed" | "smart";
+export type RangeMode = "custom" | "fixed";
 
 export type SplitOptions = {
   mode: SplitMode;

@@ -4,7 +4,7 @@ export const SITE_TAGLINE =
   "Free Privacy-First Merge, Split & Edit PDF Tools";
 
 export const SITE_DESCRIPTION =
-  "Free PDF tools to merge, split, convert, and edit files in your browser. Privacy-first — your documents never leave your device.";
+  "Free PDF tools to merge, split, convert, edit, sign, and secure your files in your browser. Privacy-first — no sign-up, no watermarks, and most processing stays on your device.";
 
 export const SITE_FACEBOOK_URL = "https://www.facebook.com/pdfruk";
 

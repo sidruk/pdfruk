@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import type { ToolDefinition } from "@/config/tools";
 
+import type { ToolSeoContent } from "./tool-content";
+
 import {
   SITE_DESCRIPTION,
   SITE_FACEBOOK_URL,
@@ -217,6 +219,28 @@ export function buildFaqJsonLd(
         "@type": "Answer",
         text: item.answer,
       },
+    })),
+  };
+}
+
+export function buildHowToJsonLd(
+  tool: ToolDefinition,
+  content: ToolSeoContent,
+) {
+  const siteUrl = getSiteUrl();
+  const url = `${siteUrl}${tool.href}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name: content.howToTitle,
+    description: content.directAnswer,
+    url,
+    step: content.steps.map((step, index) => ({
+      "@type": "HowToStep",
+      position: index + 1,
+      name: step.split(".")[0],
+      text: step,
     })),
   };
 }
