@@ -2,6 +2,7 @@ import { encryptPDF } from "@pdfsmaller/pdf-encrypt";
 import { isEncrypted } from "@pdfsmaller/pdf-decrypt";
 
 import { MAX_FILE_SIZE } from "@/lib/pdf/constants";
+import { normalizePdfBytes } from "@/lib/pdf/normalize";
 
 export type ProtectPdfOptions = {
   allowPrint?: boolean;
@@ -45,7 +46,10 @@ export async function protectPdf(
   const allowCopy = options.allowCopy ?? false;
 
   try {
-    const protectedBytes = await encryptPDF(pdfBytes, password, {
+    const normalized = await normalizePdfBytes(pdfBytes);
+
+    const protectedBytes = await encryptPDF(normalized, password, {
+      algorithm: "RC4",
       ownerPassword: password,
       allowPrinting: allowPrint,
       allowHighQualityPrint: allowPrint,

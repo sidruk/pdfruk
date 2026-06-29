@@ -1,6 +1,7 @@
 import { decryptPDF, isEncrypted } from "@pdfsmaller/pdf-decrypt";
 
 import { MAX_FILE_SIZE } from "@/lib/pdf/constants";
+import { normalizePdfBytes } from "@/lib/pdf/normalize";
 
 function isPdfBytes(data: Uint8Array): boolean {
   return data.length >= 4 && data[0] === 0x25 && data[1] === 0x50 && data[2] === 0x44 && data[3] === 0x46;
@@ -35,13 +36,14 @@ export async function unlockPdf(
   }
 
   try {
-    const unlockedBytes = await decryptPDF(pdfBytes, password);
+    const decryptedBytes = await decryptPDF(pdfBytes, password);
+    const normalized = await normalizePdfBytes(decryptedBytes);
 
-    if (!isPdfBytes(unlockedBytes)) {
+    if (!isPdfBytes(normalized)) {
       throw new Error("Unlocked PDF validation failed.");
     }
 
-    return unlockedBytes;
+    return normalized;
   } catch (error) {
     if (error instanceof Error) {
       if (error.message.includes("Incorrect password")) {
