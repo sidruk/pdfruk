@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const isAdminRoute = pathname.startsWith("/admin");
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" forcedTheme="light">
       {!isAdminRoute ? <Header /> : null}
       <main className={isAdminRoute ? "min-h-screen" : "min-h-[calc(100vh-8rem)]"}>
         {children}

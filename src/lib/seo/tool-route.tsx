@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 
 import { ToolSeoContentBlock } from "@/components/seo/tool-seo-content";
 import { getToolByHref } from "@/config/tools";
@@ -25,6 +26,10 @@ export function createToolRoute(href: string) {
   const metadata: Metadata = buildToolMetadata(resolvedTool);
 
   function ToolRouteLayout({ children }: { children: ReactNode }) {
+    if (resolvedTool.hidden) {
+      notFound();
+    }
+
     const jsonLd = [
       buildToolJsonLd(resolvedTool),
       ...(seoContent

@@ -61,16 +61,20 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Merge PDF Without Uploading — Private & Free",
+      title: "Safe Combine PDF Without Uploading — Private & Free",
       description:
         "Combine PDF files in your browser without uploading to a server. Drag to reorder, merge locally, download free — files stay on your device. No signup.",
       keywords: [
         "merge pdf without uploading",
         "combine pdf offline",
-        "merge pdf privately",
-        "merge pdf on iphone",
+        "safe combine pdf privately",
+        "safe combine pdf",
+        "merge pdf online secure",  
+        "safe combine pdf on iphone",
         "private pdf merger",
+        "secure combine pdf",
         "combine pdf in browser",
+        "safe combine pdf files stay on device",
         "merge pdf files stay on device",
       ],
     },

@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 import { Logo } from "@/components/layout/logo";
-import { ThemeToggle } from "@/components/layout/theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,8 +17,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   TOOL_CATEGORIES,
-  TOOLS,
   getToolsByCategory,
+  getVisibleTools,
+  isToolVisible,
   type ToolDefinition,
 } from "@/config/tools";
 import { cn } from "@/lib/utils";
@@ -31,6 +31,7 @@ const PRIMARY_LINKS = [
 ] as const;
 
 const CONVERT_TOOLS = getToolsByCategory("Convert");
+const ALL_VISIBLE_TOOLS = getVisibleTools();
 
 function NavLink({
   href,
@@ -70,10 +71,11 @@ function NavDropdown({
   active?: boolean;
   grouped?: boolean;
 }) {
+  const visibleTools = tools.filter(isToolVisible);
   const groupedCategories = grouped
     ? TOOL_CATEGORIES.map((category) => ({
         category,
-        tools: tools.filter((tool) => tool.category === category),
+        tools: visibleTools.filter((tool) => tool.category === category),
       })).filter((group) => group.tools.length > 0)
     : [];
 
@@ -108,7 +110,7 @@ function NavDropdown({
                 ) : null}
               </DropdownMenuGroup>
             ))
-          : tools.map((tool) => (
+          : visibleTools.map((tool) => (
               <DropdownMenuItem key={tool.id} render={<Link href={tool.href} />}>
                 {tool.title}
               </DropdownMenuItem>
@@ -136,7 +138,7 @@ function DesktopNav({ pathname }: { pathname: string }) {
         tools={CONVERT_TOOLS}
         active={isConvertActive}
       />
-      <NavDropdown label="All PDF Tools" tools={TOOLS} grouped />
+      <NavDropdown label="All PDF Tools" tools={ALL_VISIBLE_TOOLS} grouped />
     </nav>
   );
 }
@@ -232,7 +234,6 @@ export function TopNav() {
           <Logo size="md" priority />
           <DesktopNav pathname={pathname} />
           <div className="ml-auto flex items-center gap-1">
-            <ThemeToggle />
             <MobileNav pathname={pathname} />
           </div>
         </div>
