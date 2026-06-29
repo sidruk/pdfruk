@@ -7,12 +7,12 @@ export const FAQ_ITEMS = [
   {
     question: "Do my PDF files get uploaded to a server?",
     answer:
-      "For most tools, no. Merge, split, rotate, convert, edit, sign, watermark, and page-number tools all run entirely in your browser using client-side processing. Your files stay on your device and are never sent to our servers. A small number of server-assisted tools — such as compress, protect, and unlock — process files on a backend service when you use them.",
+      "For most tools, no. Merge, split, rotate, convert, edit, sign, watermark, page-number, protect, and unlock tools all run entirely in your browser using client-side processing. Your files stay on your device and are never sent to our servers. Only compress may use a backend service when you use it.",
   },
   {
     question: "Is pdfruk safe for confidential documents?",
     answer:
-      "Because most processing happens locally in your browser, sensitive documents never leave your computer during merge, split, edit, or conversion tasks. This makes pdfruk a strong choice for private contracts, financial records, medical forms, and other confidential PDFs that you would not want to upload to a third-party server.",
+      "Because most processing happens locally in your browser, sensitive documents never leave your computer during merge, split, edit, protect, unlock, or conversion tasks. This makes pdfruk a strong choice for private contracts, financial records, medical forms, and other confidential PDFs that you would not want to upload to a third-party server.",
   },
   {
     question: "What devices and browsers are supported?",
@@ -47,6 +47,6 @@ export const FAQ_ITEMS = [
   {
     question: "Which PDF tools work offline?",
     answer:
-      "Once a tool page has loaded in your browser, core tasks such as merge, split, rotate, and edit can continue without an active internet connection. You will need connectivity to open pdfruk initially and to load the tool, but file processing itself does not require ongoing access to our servers for browser-based tools.",
+      "Once a tool page has loaded in your browser, core tasks such as merge, split, rotate, protect, unlock, and edit can continue without an active internet connection. You will need connectivity to open pdfruk initially and to load the tool, but file processing itself does not require ongoing access to our servers for browser-based tools.",
   },
 ] as const;

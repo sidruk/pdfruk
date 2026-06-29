@@ -55,7 +55,7 @@ export const SECURITY_PAGE: StaticPageConfig = {
     {
       question: "Does pdfruk store my PDF files?",
       answer:
-        "No. Client-side tools never send your files to us. For compress, protect, and unlock, files are processed temporarily and not retained after your task completes.",
+        "No. Client-side tools never send your files to us. For compress, files are processed temporarily and not retained after your task completes.",
     },
     {
       question: "Is pdfruk safe for confidential documents?",
@@ -92,7 +92,7 @@ export const PRIVACY_PAGE: StaticPageConfig = {
     {
       question: "Does pdfruk upload my PDF files?",
       answer:
-        "For most tools, no — processing happens in your browser. Only server-assisted tools like compress, protect, and unlock may temporarily transmit files to complete the operation.",
+        "For most tools, no — processing happens in your browser. Only server-assisted tools like compress may temporarily transmit files to complete the operation.",
     },
     {
       question: "What data does pdfruk collect?",

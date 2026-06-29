@@ -35,8 +35,10 @@ export function UnlockOptions({
         <div className="min-w-0 flex-1">
           <p className="truncate font-medium">{file.name}</p>
           <p className="text-sm text-muted-foreground">
-            {file.pageCount} page{file.pageCount === 1 ? "" : "s"} ·{" "}
-            {formatBytes(file.file.size)}
+            {file.pageCount > 0
+              ? `${file.pageCount} page${file.pageCount === 1 ? "" : "s"}`
+              : "Password protected"}{" "}
+            · {formatBytes(file.file.size)}
           </p>
         </div>
         <Button

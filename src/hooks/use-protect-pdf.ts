@@ -4,16 +4,12 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { trackToolComplete } from "@/lib/analytics/track";
+import { protectPdf, protectedFilename } from "@/lib/pdf/protect";
 import { getPdfPageCount, validatePdfFile, validationErrorMessage } from "@/lib/pdf/validate";
 import type { PdfFile, ProcessProgress, ProcessResult } from "@/types/pdf";
 
 function createFileId(): string {
   return crypto.randomUUID();
-}
-
-function protectedFilename(name: string): string {
-  const base = name.replace(/\.pdf$/i, "");
-  return `${base}-protected.pdf`;
 }
 
 export function useProtectPdf() {
@@ -92,33 +88,21 @@ export function useProtectPdf() {
     setError(null);
     setResult(null);
 
-    const formData = new FormData();
-    formData.append("file", file.file, file.name);
-    formData.append("password", password);
-    formData.append("allowPrint", String(allowPrint));
-    formData.append("allowCopy", String(allowCopy));
-
     try {
-      const response = await fetch("/api/protect", {
-        method: "POST",
-        body: formData,
+      const buffer = await file.file.arrayBuffer();
+      const protectedBytes = await protectPdf(buffer, password, {
+        allowPrint,
+        allowCopy,
       });
 
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { error?: string }
-          | null;
-        const message = payload?.error ?? "Failed to protect PDF.";
-        setError(message);
-        toast.error(message);
-        return;
-      }
-
-      const blob = await response.blob();
+      const blob = new Blob([new Uint8Array(protectedBytes)], {
+        type: "application/pdf",
+      });
       setResult({ blob, filename: protectedFilename(file.name) });
       trackToolComplete("protect");
-    } catch {
-      const message = "Failed to protect PDF. Please try again.";
+    } catch (caught) {
+      const message =
+        caught instanceof Error ? caught.message : "Failed to protect PDF. Please try again.";
       setError(message);
       toast.error(message);
     } finally {

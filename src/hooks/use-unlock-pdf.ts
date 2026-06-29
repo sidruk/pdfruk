@@ -4,16 +4,11 @@ import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 import { trackToolComplete } from "@/lib/analytics/track";
-import { getPdfPageCount } from "@/lib/pdf/validate";
+import { unlockPdf, unlockedFilename, validateUnlockPdfFile } from "@/lib/pdf/unlock";
 import type { PdfFile, ProcessProgress, ProcessResult } from "@/types/pdf";
 
 function createFileId(): string {
   return crypto.randomUUID();
-}
-
-function unlockedFilename(name: string): string {
-  const base = name.replace(/\.pdf$/i, "");
-  return `${base}-unlocked.pdf`;
 }
 
 export function useUnlockPdf() {
@@ -31,16 +26,9 @@ export function useUnlockPdf() {
     setError(null);
     setResult(null);
 
-    if (nextFile.type !== "application/pdf" && !nextFile.name.toLowerCase().endsWith(".pdf")) {
-      toast.error("Please upload a PDF file.");
-      return;
-    }
-
-    let pageCount = 0;
-    try {
-      pageCount = await getPdfPageCount(nextFile);
-    } catch {
-      toast.error("This file appears corrupted or is not a valid PDF.");
+    const validationError = await validateUnlockPdfFile(nextFile);
+    if (validationError) {
+      toast.error(validationError);
       return;
     }
 
@@ -48,7 +36,7 @@ export function useUnlockPdf() {
       id: createFileId(),
       file: nextFile,
       name: nextFile.name,
-      pageCount,
+      pageCount: 0,
     });
   }, []);
 
@@ -84,31 +72,18 @@ export function useUnlockPdf() {
     setError(null);
     setResult(null);
 
-    const formData = new FormData();
-    formData.append("file", file.file, file.name);
-    formData.append("password", password);
-
     try {
-      const response = await fetch("/api/unlock", {
-        method: "POST",
-        body: formData,
+      const buffer = await file.file.arrayBuffer();
+      const unlockedBytes = await unlockPdf(buffer, password);
+
+      const blob = new Blob([new Uint8Array(unlockedBytes)], {
+        type: "application/pdf",
       });
-
-      if (!response.ok) {
-        const payload = (await response.json().catch(() => null)) as
-          | { error?: string }
-          | null;
-        const message = payload?.error ?? "Failed to unlock PDF.";
-        setError(message);
-        toast.error(message);
-        return;
-      }
-
-      const blob = await response.blob();
       setResult({ blob, filename: unlockedFilename(file.name) });
       trackToolComplete("unlock");
-    } catch {
-      const message = "Failed to unlock PDF. Please try again.";
+    } catch (caught) {
+      const message =
+        caught instanceof Error ? caught.message : "Failed to unlock PDF. Please try again.";
       setError(message);
       toast.error(message);
     } finally {

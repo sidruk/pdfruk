@@ -30,7 +30,7 @@ export default function ProtectPage() {
   return (
     <ToolShell
       title="Protect PDF"
-      description="Add a password to restrict access to your PDF. Files are processed on the server and deleted immediately after encryption."
+      description="Add a password to restrict access to your PDF. Encryption runs entirely in your browser — your file and password never leave your device."
       accept={PDF_ACCEPT}
       multiple={false}
       onFilesAccepted={(accepted) => void addFile(accepted)}
@@ -43,7 +43,6 @@ export default function ProtectPage() {
       onReset={reset}
       processLabel="Protect PDF"
       dropzoneDisabled={isProcessing}
-      privacyLabel="Processed securely, not stored"
     >
       {file ? (
         <ProtectOptions

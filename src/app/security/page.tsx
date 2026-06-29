@@ -18,7 +18,8 @@ export default function SecurityPage() {
         <Link href="/merge">merge</Link>, <Link href="/split">split</Link>,{" "}
         <Link href="/rotate">rotate</Link>, convert,{" "}
         <Link href="/edit-pdf">edit</Link>, <Link href="/sign-pdf">sign</Link>,{" "}
-        <Link href="/watermark">watermark</Link>, or page-number tasks.
+        <Link href="/watermark">watermark</Link>, <Link href="/protect">protect</Link>,{" "}
+        <Link href="/unlock">unlock</Link>, or page-number tasks.
       </p>
 
       <h2>Browser-based PDF processing</h2>
@@ -33,11 +34,9 @@ export default function SecurityPage() {
       <h2>Server-assisted tools</h2>
       <p>
         A small number of tools — including{" "}
-        <Link href="/compress">compress</Link>,{" "}
-        <Link href="/protect">protect</Link>, and{" "}
-        <Link href="/unlock">unlock</Link> — may send files to a backend service
-        to perform operations that are difficult to run reliably in the browser.
-        When you use these tools:
+        <Link href="/compress">compress</Link> — may send files to a backend
+        service to perform operations that are difficult to run reliably in the
+        browser. When you use these tools:
       </p>
       <ul>
         <li>Files are transmitted over encrypted HTTPS connections.</li>

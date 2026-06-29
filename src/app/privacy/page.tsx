@@ -28,9 +28,9 @@ export default function PrivacyPage() {
         <Link href="/sign-pdf">add a signature</Link>.
       </p>
       <p>
-        For server-assisted tools (such as compress, protect, and unlock), files
-        may be temporarily transmitted to our backend to complete the operation.
-        These files are not stored permanently and are deleted after processing.
+        For server-assisted tools (such as compress), files may be temporarily
+        transmitted to our backend to complete the operation. These files are
+        not stored permanently and are deleted after processing.
       </p>
 
       <h2>Information we may collect</h2>

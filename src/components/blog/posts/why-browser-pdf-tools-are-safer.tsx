@@ -43,11 +43,12 @@ export function WhyBrowserPdfToolsAreSaferContent() {
 
       <h2>When server processing is still needed</h2>
       <p>
-        Some operations, like heavy <Link href="/compress">compression</Link> or
-        certain <Link href="/protect">password protection</Link> tasks, may
-        require server assistance. pdfruk discloses these cases clearly and
-        transmits files over HTTPS only for the duration of the task. Read our{" "}
-        <Link href="/security">security page</Link> for the full breakdown.
+        Heavy <Link href="/compress">compression</Link> may still use server
+        assistance when browser-based methods are not enough. pdfruk discloses
+        those cases clearly. Password <Link href="/protect">protection</Link>{" "}
+        and <Link href="/unlock">unlock</Link> run locally in your browser.
+        Read our <Link href="/security">security page</Link> for the full
+        breakdown.
       </p>
 
       <h2>What to look for in a private PDF toolkit</h2>

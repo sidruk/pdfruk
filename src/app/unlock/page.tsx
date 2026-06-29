@@ -24,7 +24,7 @@ export default function UnlockPage() {
   return (
     <ToolShell
       title="Unlock PDF"
-      description="Remove password protection from a PDF. Files are processed on the server and deleted immediately."
+      description="Remove password protection from a PDF you own. Decryption runs entirely in your browser — your file and password never leave your device."
       accept={PDF_ACCEPT}
       multiple={false}
       onFilesAccepted={(accepted) => void addFile(accepted)}
@@ -37,7 +37,6 @@ export default function UnlockPage() {
       onReset={reset}
       processLabel="Unlock PDF"
       dropzoneDisabled={isProcessing}
-      privacyLabel="Processed securely, not stored"
     >
       {file ? (
         <UnlockOptions

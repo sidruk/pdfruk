@@ -335,7 +335,6 @@ export const TOOLS: ToolDefinition[] = [
     icon: Lock,
     category: "Security",
     status: "live",
-    requiresServer: true,
     seo: {
       title: "Protect PDF with Password Online Free",
       description:
@@ -356,7 +355,6 @@ export const TOOLS: ToolDefinition[] = [
     icon: LockOpen,
     category: "Security",
     status: "live",
-    requiresServer: true,
     seo: {
       title: "Unlock PDF Online — Remove PDF Password Free",
       description:
