@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 
 import { getVisibleTools } from "@/config/tools";
+import { getAllBlogPosts, getBlogPostPath } from "@/lib/content/blog-posts";
 import { isSearchEngineIndexingDiscouraged } from "@/lib/seo/indexing";
+import { ALL_STATIC_PAGES } from "@/lib/seo/static-pages";
 import { getSiteUrl } from "@/lib/seo/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -18,6 +20,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  const staticEntries = ALL_STATIC_PAGES.map((page) => ({
+    url: `${siteUrl}${page.path}`,
+    lastModified: new Date(page.dateModified),
+    changeFrequency: "monthly" as const,
+    priority: page.sitemapPriority,
+  }));
+
+  const blogEntries = getAllBlogPosts().map((post) => ({
+    url: `${siteUrl}${getBlogPostPath(post.slug)}`,
+    lastModified: new Date(post.dateModified),
+    changeFrequency: "monthly" as const,
+    priority: post.sitemapPriority,
+  }));
+
   return [
     {
       url: siteUrl,
@@ -26,5 +42,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     ...toolEntries,
+    ...staticEntries,
+    ...blogEntries,
   ];
 }

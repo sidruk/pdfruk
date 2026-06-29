@@ -33,6 +33,7 @@ export function buildPageMetadata({
   noIndex?: boolean;
 }): Metadata {
   const url = absoluteUrl(path);
+  const ogImage = absoluteUrl("/icon.png");
 
   return {
     title,
@@ -49,11 +50,20 @@ export function buildPageMetadata({
       siteName: SITE_NAME,
       title: `${title} | ${SITE_NAME}`,
       description,
+      images: [
+        {
+          url: ogImage,
+          width: 512,
+          height: 512,
+          alt: SITE_NAME,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: `${title} | ${SITE_NAME}`,
       description,
+      images: [ogImage],
     },
   };
 }
@@ -223,5 +233,177 @@ export function buildHowToJsonLd(
       name: step.split(".")[0],
       text: step,
     })),
+  };
+}
+
+export function buildBreadcrumbJsonLd(
+  items: ReadonlyArray<{ name: string; path: string }>,
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: absoluteUrl(item.path),
+    })),
+  };
+}
+
+export function buildWebPageJsonLd({
+  title,
+  description,
+  path,
+  dateModified,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  dateModified?: string;
+}) {
+  const siteUrl = getSiteUrl();
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    description,
+    url: absoluteUrl(path),
+    isPartOf: {
+      "@type": "WebSite",
+      name: SITE_NAME,
+      url: siteUrl,
+    },
+    ...(dateModified
+      ? {
+          dateModified,
+          datePublished: dateModified,
+        }
+      : {}),
+    inLanguage: "en-GB",
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: siteUrl,
+      logo: absoluteUrl("/icon.png"),
+    },
+  };
+}
+
+export function buildBlogListingJsonLd(
+  posts: ReadonlyArray<{
+    title: string;
+    url: string;
+    datePublished: string;
+    description: string;
+  }>,
+) {
+  const siteUrl = getSiteUrl();
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    name: `${SITE_NAME} Blog`,
+    description: "PDF tips, guides, and productivity advice from pdfruk.",
+    url: absoluteUrl("/blog"),
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: siteUrl,
+      logo: absoluteUrl("/icon.png"),
+    },
+    blogPost: posts.map((post) => ({
+      "@type": "BlogPosting",
+      headline: post.title,
+      description: post.description,
+      url: absoluteUrl(post.url),
+      datePublished: post.datePublished,
+      author: {
+        "@type": "Organization",
+        name: SITE_NAME,
+      },
+      publisher: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        logo: absoluteUrl("/icon.png"),
+      },
+    })),
+  };
+}
+
+export function buildBlogPostJsonLd({
+  title,
+  description,
+  path,
+  datePublished,
+  dateModified,
+}: {
+  title: string;
+  description: string;
+  path: string;
+  datePublished: string;
+  dateModified: string;
+}) {
+  const siteUrl = getSiteUrl();
+  const url = absoluteUrl(path);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: title,
+    description,
+    url,
+    datePublished,
+    dateModified,
+    author: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: siteUrl,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: siteUrl,
+      logo: {
+        "@type": "ImageObject",
+        url: absoluteUrl("/icon.png"),
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": url,
+    },
+    isPartOf: {
+      "@type": "Blog",
+      name: `${SITE_NAME} Blog`,
+      url: absoluteUrl("/blog"),
+    },
+    inLanguage: "en-GB",
+  };
+}
+
+export function buildContactPageJsonLd() {
+  const siteUrl = getSiteUrl();
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "ContactPage",
+    name: "Contact pdfruk",
+    url: absoluteUrl("/contact"),
+    description:
+      "Contact pdfruk for PDF tool support, feedback, and enquiries.",
+    mainEntity: {
+      "@type": "Organization",
+      name: SITE_NAME,
+      url: siteUrl,
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: SITE_PHONE,
+        contactType: "customer service",
+        availableLanguage: ["English"],
+        url: absoluteUrl("/contact"),
+      },
+    },
   };
 }

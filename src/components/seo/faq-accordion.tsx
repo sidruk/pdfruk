@@ -38,8 +38,10 @@ export function FaqAccordion({
             key={item.question}
             className="group rounded-2xl border border-border/60 bg-card/90 shadow-sm backdrop-blur-sm dark:bg-card/70 [&_summary::-webkit-details-marker]:hidden"
           >
-            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 text-base font-semibold text-brand-charcoal marker:content-none dark:text-foreground">
-              <span className="text-left">{item.question}</span>
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-6 marker:content-none">
+              <h3 className="text-left text-base font-semibold text-brand-charcoal dark:text-foreground">
+                {item.question}
+              </h3>
               <ChevronDown
                 className="h-5 w-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"
                 aria-hidden
