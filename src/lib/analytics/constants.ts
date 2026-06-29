@@ -4,14 +4,18 @@ export const TRACKABLE_TOOL_IDS = [
   "merge",
   "split",
   "rotate",
+  "delete-reorder",
   "jpg-to-pdf",
   "edit-pdf",
+  "sign-pdf",
   "watermark",
   "page-numbers",
   "crop",
   "pdf-forms",
   "compress",
   "pdf-to-jpg",
+  "protect",
+  "unlock",
 ] as const;
 
 export type TrackableToolId = (typeof TRACKABLE_TOOL_IDS)[number];

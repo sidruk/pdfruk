@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   },
   description:
     "Free PDF tools that run entirely in your browser. Merge, split, convert, and edit PDFs — your files never leave your device.",
+  icons: {
+    icon: [{ url: "/icon.png", type: "image/png", sizes: "32x32" }],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
+  },
 };
 
 export default function RootLayout({

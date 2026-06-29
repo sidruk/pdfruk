@@ -15,6 +15,10 @@ import { CropOverlay } from "@/components/pdf/crop-overlay";
 import { DownloadResult } from "@/components/tools/download-result";
 import { ProgressBar } from "@/components/tools/progress-bar";
 import { usePdfPageView } from "@/hooks/use-pdf-page-view";
+import {
+  getFitZoom,
+  PDF_VIEWER_BASE_SCALE,
+} from "@/lib/pdf/fit-zoom";
 import { parsePageInput } from "@/lib/pdf/range-entries";
 import { cn } from "@/lib/utils";
 import type {
@@ -45,37 +49,6 @@ type CropWorkspaceProps = {
   onProcess: () => void;
   onReset: () => void;
 };
-
-const BASE_SCALE = 1.5;
-const MIN_ZOOM = 0.1;
-
-function getFitZoom(
-  container: HTMLElement,
-  renderWidth: number,
-  renderHeight: number,
-  zoom: number,
-): number | null {
-  const style = window.getComputedStyle(container);
-  const availableWidth =
-    container.clientWidth -
-    parseFloat(style.paddingLeft) -
-    parseFloat(style.paddingRight);
-  const availableHeight =
-    container.clientHeight -
-    parseFloat(style.paddingTop) -
-    parseFloat(style.paddingBottom);
-
-  if (availableWidth <= 0 || availableHeight <= 0 || zoom <= 0) return null;
-
-  const baseWidth = renderWidth / zoom;
-  const baseHeight = renderHeight / zoom;
-  const targetZoom = Math.min(
-    availableWidth / baseWidth,
-    availableHeight / baseHeight,
-  );
-
-  return Math.max(MIN_ZOOM, Math.min(targetZoom, 3));
-}
 
 function ScopeOption({
   id,
@@ -137,7 +110,7 @@ export function CropWorkspace({
   const { render, isLoading: isPageLoading } = usePdfPageView(
     file.file,
     currentPage,
-    BASE_SCALE * zoom,
+    PDF_VIEWER_BASE_SCALE * zoom,
   );
 
   const handleFitToPage = useCallback(() => {

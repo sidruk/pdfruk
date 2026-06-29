@@ -23,7 +23,81 @@ function normalizeTextAnnotation(annotation: TextAnnotation): TextAnnotation {
     fontFamily: annotation.fontFamily ?? "helvetica",
     bold: annotation.bold ?? false,
     italic: annotation.italic ?? false,
+    underline: annotation.underline ?? false,
+    textAlign: annotation.textAlign ?? "left",
+    opacity: annotation.opacity ?? 100,
+    backgroundColor: annotation.backgroundColor ?? null,
   };
+}
+
+function textXForAlign(
+  annotation: TextAnnotation,
+  pageWidth: number,
+  font: EmbeddedFont,
+): number {
+  const normalized = normalizeTextAnnotation(annotation);
+  const boxX = normalized.x * pageWidth;
+  const boxWidth = normalized.width * pageWidth;
+  const textWidth = font.widthOfTextAtSize(normalized.text, normalized.fontSize);
+
+  switch (normalized.textAlign) {
+    case "center":
+      return boxX + Math.max(0, (boxWidth - textWidth) / 2);
+    case "right":
+      return boxX + Math.max(0, boxWidth - textWidth);
+    default:
+      return boxX;
+  }
+}
+
+function applyTextAnnotation(
+  page: PDFPage,
+  annotation: TextAnnotation,
+  font: EmbeddedFont,
+): void {
+  const normalized = normalizeTextAnnotation(annotation);
+  const { width: pageWidth, height: pageHeight } = page.getSize();
+  const color = parseHexColor(normalized.color);
+  const opacity = (normalized.opacity ?? 100) / 100;
+  const x = textXForAlign(normalized, pageWidth, font);
+  const y = toPdfY(pageHeight, normalized.y + normalized.height);
+  const size = normalized.fontSize;
+  const boxX = normalized.x * pageWidth;
+  const boxY = toPdfY(pageHeight, normalized.y + normalized.height);
+  const boxWidth = normalized.width * pageWidth;
+  const boxHeight = normalized.height * pageHeight;
+
+  if (normalized.backgroundColor) {
+    page.drawRectangle({
+      x: boxX,
+      y: boxY,
+      width: boxWidth,
+      height: boxHeight,
+      color: parseHexColor(normalized.backgroundColor),
+      opacity,
+    });
+  }
+
+  page.drawText(normalized.text, {
+    x,
+    y,
+    size,
+    font,
+    color,
+    opacity,
+    rotate: degrees(normalized.rotation),
+  });
+
+  if (normalized.underline) {
+    const textWidth = font.widthOfTextAtSize(normalized.text, size);
+    page.drawLine({
+      start: { x, y: y - 2 },
+      end: { x: x + textWidth, y: y - 2 },
+      thickness: Math.max(1, size * 0.06),
+      color,
+      opacity,
+    });
+  }
 }
 
 async function getTextFont(
@@ -46,28 +120,6 @@ async function getTextFont(
   );
   cache.set(key, font);
   return font;
-}
-
-function applyTextAnnotation(
-  page: PDFPage,
-  annotation: TextAnnotation,
-  font: EmbeddedFont,
-): void {
-  const normalized = normalizeTextAnnotation(annotation);
-  const { width: pageWidth, height: pageHeight } = page.getSize();
-  const color = parseHexColor(normalized.color);
-  const x = normalized.x * pageWidth;
-  const y = toPdfY(pageHeight, normalized.y + normalized.height);
-  const size = normalized.fontSize;
-
-  page.drawText(normalized.text, {
-    x,
-    y,
-    size,
-    font,
-    color,
-    rotate: degrees(normalized.rotation),
-  });
 }
 
 async function applyImageAnnotation(

@@ -16,6 +16,7 @@ export default function EditPdfPage() {
     pageAnnotations,
     selectedId,
     selectedAnnotation,
+    editingTextId,
     color,
     strokeWidth,
     fontSize,
@@ -33,13 +34,17 @@ export default function EditPdfPage() {
     setFontFamily,
     setBold,
     setItalic,
-    setSelectedId,
+    selectAnnotation,
+    startEditingText,
+    stopEditingText,
     addFile,
     addAnnotation,
     addImageFromFile,
     addSignatureFromDataUrl,
     updateAnnotation,
     removeAnnotation,
+    removeAllOnPage,
+    reorderPageAnnotation,
     goToPage,
     zoomIn,
     zoomOut,
@@ -57,7 +62,7 @@ export default function EditPdfPage() {
       multiple={false}
       onFilesAccepted={(accepted) => void addFile(accepted)}
       showDropzone={!file}
-      showProcessButton={!file}
+      showProcessButton={false}
       canProcess={canProcess}
       onProcess={() => void process()}
       isProcessing={isProcessing}
@@ -67,6 +72,7 @@ export default function EditPdfPage() {
       processLabel="Export"
       dropzoneDisabled={isProcessing}
       wide={!!file}
+      hideIntro={!!file}
     >
       {file ? (
         <EditWorkspace
@@ -78,6 +84,7 @@ export default function EditPdfPage() {
           pageAnnotations={pageAnnotations}
           selectedId={selectedId}
           selectedAnnotation={selectedAnnotation}
+          editingTextId={editingTextId}
           color={color}
           strokeWidth={strokeWidth}
           fontSize={fontSize}
@@ -106,10 +113,14 @@ export default function EditPdfPage() {
           onAddSignature={(dataUrl) =>
             void addSignatureFromDataUrl(dataUrl)
           }
-          onSelect={setSelectedId}
+          onSelect={selectAnnotation}
           onAdd={addAnnotation}
           onUpdate={updateAnnotation}
           onRemove={removeAnnotation}
+          onRemoveAllOnPage={removeAllOnPage}
+          onReorderPageAnnotation={reorderPageAnnotation}
+          onStartEditingText={startEditingText}
+          onStopEditingText={stopEditingText}
           onProcess={() => void process()}
           onReset={reset}
         />

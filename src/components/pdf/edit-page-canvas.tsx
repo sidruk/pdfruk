@@ -22,6 +22,7 @@ type EditPageCanvasProps = {
   activeTool: EditTool;
   activeShape: ShapeKind;
   selectedId: string | null;
+  editingTextId?: string | null;
   color: string;
   strokeWidth: number;
   fontSize: number;
@@ -32,7 +33,8 @@ type EditPageCanvasProps = {
   onAdd: (annotation: EditAnnotation) => void;
   onUpdate: (id: string, patch: Partial<EditAnnotation>) => void;
   onRemove: (id: string) => void;
-  onTextPlaced?: () => void;
+  onTextPlaced?: (textId: string) => void;
+  onEditingTextChange?: (id: string | null) => void;
 };
 
 type DraftState =
@@ -105,14 +107,18 @@ function clampPosition(
   };
 }
 
+type MoveInteraction = {
+  kind: "move";
+  startClientX: number;
+  startClientY: number;
+  origX: number;
+  origY: number;
+  scaleX: number;
+  scaleY: number;
+};
+
 type TextInteraction =
-  | {
-      kind: "move";
-      startX: number;
-      startY: number;
-      origX: number;
-      origY: number;
-    }
+  | MoveInteraction
   | {
       kind: "rotate";
       startAngle: number;
@@ -123,6 +129,205 @@ type TextInteraction =
 
 const MOVE_BAR_HEIGHT = 14;
 const ROTATE_HANDLE_OFFSET = 32;
+const RESIZE_HANDLE_SIZE = 8;
+const TEXT_HANDLE_SIZE = 7;
+const TEXT_SELECTION_COLOR = "#3b82f6";
+const TEXT_PLACEHOLDER = "Your text here";
+const TEXT_LINE_PADDING = 8;
+const TEXT_DRAG_HANDLE_SPACE = 14;
+const MIN_PLACED_SIZE = 0.03;
+
+let textMeasureCanvas: HTMLCanvasElement | null = null;
+
+function measureTextWidth(
+  text: string,
+  fontSize: number,
+  fontFamily: EditFontFamily,
+  bold: boolean,
+  italic: boolean,
+): number {
+  const sample = text || TEXT_PLACEHOLDER;
+  if (typeof document === "undefined") {
+    return sample.length * fontSize * 0.55;
+  }
+
+  textMeasureCanvas ??= document.createElement("canvas");
+  const context = textMeasureCanvas.getContext("2d");
+  if (!context) {
+    return sample.length * fontSize * 0.55;
+  }
+
+  context.font = `${italic ? "italic " : ""}${bold ? "bold " : ""}${fontSize}px ${canvasFontFamily(fontFamily)}`;
+  return context.measureText(sample).width;
+}
+
+function singleLineBoxSize(
+  text: string,
+  fontSize: number,
+  fontFamily: EditFontFamily,
+  bold: boolean,
+  italic: boolean,
+  pageWidth: number,
+  pageHeight: number,
+): { width: number; height: number } {
+  const textWidth = measureTextWidth(text, fontSize, fontFamily, bold, italic);
+
+  return {
+    width: Math.max(
+      MIN_PLACED_SIZE,
+      Math.min(1, (textWidth + TEXT_LINE_PADDING * 2) / pageWidth),
+    ),
+    height: Math.max(
+      MIN_PLACED_SIZE,
+      (fontSize + TEXT_LINE_PADDING * 2 + TEXT_DRAG_HANDLE_SPACE) / pageHeight,
+    ),
+  };
+}
+
+type ResizeHandle = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
+
+type ResizeInteraction = {
+  kind: "resize";
+  handle: ResizeHandle;
+  origX: number;
+  origY: number;
+  origWidth: number;
+  origHeight: number;
+  origRotation: number;
+  anchorPageX: number;
+  anchorPageY: number;
+};
+
+function rotatePoint(x: number, y: number, degrees: number) {
+  const rad = (degrees * Math.PI) / 180;
+  return {
+    x: x * Math.cos(rad) - y * Math.sin(rad),
+    y: x * Math.sin(rad) + y * Math.cos(rad),
+  };
+}
+
+function pageToLocalPoint(
+  pageX: number,
+  pageY: number,
+  box: { x: number; y: number; width: number; height: number; rotation: number },
+) {
+  const centerX = box.x + box.width / 2;
+  const centerY = box.y + box.height / 2;
+  const dx = pageX - centerX;
+  const dy = pageY - centerY;
+  const unrotated = rotatePoint(dx, dy, -box.rotation);
+  return {
+    x: unrotated.x + box.width / 2,
+    y: unrotated.y + box.height / 2,
+  };
+}
+
+function anchorOffsetForHandle(
+  handle: ResizeHandle,
+  width: number,
+  height: number,
+): { x: number; y: number } {
+  switch (handle) {
+    case "nw":
+      return { x: width / 2, y: height / 2 };
+    case "n":
+      return { x: 0, y: height / 2 };
+    case "ne":
+      return { x: -width / 2, y: height / 2 };
+    case "e":
+      return { x: -width / 2, y: 0 };
+    case "se":
+      return { x: -width / 2, y: -height / 2 };
+    case "s":
+      return { x: 0, y: -height / 2 };
+    case "sw":
+      return { x: width / 2, y: -height / 2 };
+    case "w":
+      return { x: width / 2, y: 0 };
+  }
+}
+
+function computeResizedBox(
+  handle: ResizeHandle,
+  localPoint: { x: number; y: number },
+  interaction: ResizeInteraction,
+): { x: number; y: number; width: number; height: number } {
+  const { origWidth, origHeight } = interaction;
+  let newWidth = origWidth;
+  let newHeight = origHeight;
+
+  switch (handle) {
+    case "se":
+      newWidth = Math.max(MIN_PLACED_SIZE, localPoint.x);
+      newHeight = Math.max(MIN_PLACED_SIZE, localPoint.y);
+      break;
+    case "nw":
+      newWidth = Math.max(MIN_PLACED_SIZE, origWidth - localPoint.x);
+      newHeight = Math.max(MIN_PLACED_SIZE, origHeight - localPoint.y);
+      break;
+    case "ne":
+      newWidth = Math.max(MIN_PLACED_SIZE, localPoint.x);
+      newHeight = Math.max(MIN_PLACED_SIZE, origHeight - localPoint.y);
+      break;
+    case "sw":
+      newWidth = Math.max(MIN_PLACED_SIZE, origWidth - localPoint.x);
+      newHeight = Math.max(MIN_PLACED_SIZE, localPoint.y);
+      break;
+    case "e":
+      newWidth = Math.max(MIN_PLACED_SIZE, localPoint.x);
+      break;
+    case "w":
+      newWidth = Math.max(MIN_PLACED_SIZE, origWidth - localPoint.x);
+      break;
+    case "s":
+      newHeight = Math.max(MIN_PLACED_SIZE, localPoint.y);
+      break;
+    case "n":
+      newHeight = Math.max(MIN_PLACED_SIZE, origHeight - localPoint.y);
+      break;
+  }
+
+  newWidth = Math.min(newWidth, 1);
+  newHeight = Math.min(newHeight, 1);
+
+  const anchorLocal = anchorOffsetForHandle(handle, newWidth, newHeight);
+  const anchorRotated = rotatePoint(
+    anchorLocal.x,
+    anchorLocal.y,
+    interaction.origRotation,
+  );
+  const centerX = interaction.anchorPageX - anchorRotated.x;
+  const centerY = interaction.anchorPageY - anchorRotated.y;
+  const position = clampPosition(
+    centerX - newWidth / 2,
+    centerY - newHeight / 2,
+    newWidth,
+    newHeight,
+  );
+
+  return {
+    x: position.x,
+    y: position.y,
+    width: Math.min(newWidth, 1 - position.x),
+    height: Math.min(newHeight, 1 - position.y),
+  };
+}
+
+const RESIZE_HANDLES: Array<{
+  handle: ResizeHandle;
+  x: (width: number) => number;
+  y: (height: number) => number;
+  cursor: string;
+}> = [
+  { handle: "nw", x: () => 0, y: () => 0, cursor: "nwse-resize" },
+  { handle: "n", x: (width) => width / 2, y: () => 0, cursor: "ns-resize" },
+  { handle: "ne", x: (width) => width, y: () => 0, cursor: "nesw-resize" },
+  { handle: "e", x: (width) => width, y: (height) => height / 2, cursor: "ew-resize" },
+  { handle: "se", x: (width) => width, y: (height) => height, cursor: "nwse-resize" },
+  { handle: "s", x: (width) => width / 2, y: (height) => height, cursor: "ns-resize" },
+  { handle: "sw", x: () => 0, y: (height) => height, cursor: "nesw-resize" },
+  { handle: "w", x: () => 0, y: (height) => height / 2, cursor: "ew-resize" },
+];
 
 function textFontStyles(annotation: TextAnnotation) {
   const family = annotation.fontFamily ?? "helvetica";
@@ -138,13 +343,113 @@ function textFontStyles(annotation: TextAnnotation) {
 
 type ShapeMoveInteraction = {
   kind: "move";
-  startX: number;
-  startY: number;
+  startClientX: number;
+  startClientY: number;
+  scaleX: number;
+  scaleY: number;
   origX1: number;
   origY1: number;
   origX2: number;
   origY2: number;
 };
+
+function getSvgScale(svg: SVGSVGElement | null): { scaleX: number; scaleY: number } | null {
+  if (!svg) return null;
+  const ctm = svg.getScreenCTM();
+  if (!ctm) return null;
+  return { scaleX: ctm.a, scaleY: ctm.d };
+}
+
+function clientDeltaToNormalized(
+  deltaX: number,
+  deltaY: number,
+  scale: { scaleX: number; scaleY: number },
+  pageWidth: number,
+  pageHeight: number,
+): { x: number; y: number } {
+  return {
+    x: deltaX / scale.scaleX / pageWidth,
+    y: deltaY / scale.scaleY / pageHeight,
+  };
+}
+
+function textContentStyles(annotation: TextAnnotation) {
+  const fontStyles = textFontStyles(annotation);
+  const opacity = (annotation.opacity ?? 100) / 100;
+
+  return {
+    ...fontStyles,
+    color: annotation.color,
+    opacity,
+    textAlign: annotation.textAlign ?? "left",
+    textDecoration: annotation.underline ? "underline" : "none",
+  } as const;
+}
+
+function TextBoxBorder({
+  width,
+  height,
+  showHandles,
+}: {
+  width: number;
+  height: number;
+  showHandles: boolean;
+}) {
+  return (
+    <rect
+      x={0}
+      y={0}
+      width={width}
+      height={height}
+      fill="transparent"
+      stroke={showHandles ? TEXT_SELECTION_COLOR : "transparent"}
+      strokeWidth={showHandles ? 1 : 0}
+      pointerEvents="none"
+    />
+  );
+}
+
+function TextBoxHandles({
+  width,
+  height,
+  showHandles,
+  onResizeStart,
+}: {
+  width: number;
+  height: number;
+  showHandles: boolean;
+  onResizeStart: (event: React.PointerEvent, handle: ResizeHandle) => void;
+}) {
+  if (!showHandles) return null;
+
+  return (
+    <>
+      {RESIZE_HANDLES.map(({ handle, x, y, cursor }) => {
+        const handleX = x(width);
+        const handleY = y(height);
+        return (
+          <rect
+            key={handle}
+            x={handleX - TEXT_HANDLE_SIZE / 2}
+            y={handleY - TEXT_HANDLE_SIZE / 2}
+            width={TEXT_HANDLE_SIZE}
+            height={TEXT_HANDLE_SIZE}
+            fill={TEXT_SELECTION_COLOR}
+            stroke="white"
+            strokeWidth={0.75}
+            style={{ cursor }}
+            onPointerDown={(event) => {
+              event.stopPropagation();
+              event.preventDefault();
+              event.currentTarget.setPointerCapture(event.pointerId);
+              onResizeStart(event, handle);
+            }}
+          />
+        );
+      })}
+    </>
+  );
+}
 
 function PlacedItemChrome({
   width,
@@ -152,20 +457,24 @@ function PlacedItemChrome({
   color,
   showHandles,
   showRotate = true,
+  resizable = false,
   editing,
   interaction,
   onMoveStart,
   onRotateStart,
+  onResizeStart,
 }: {
   width: number;
   height: number;
   color: string;
   showHandles: boolean;
   showRotate?: boolean;
+  resizable?: boolean;
   editing?: boolean;
-  interaction: TextInteraction | ShapeMoveInteraction | null;
+  interaction: TextInteraction | ShapeMoveInteraction | ResizeInteraction | null;
   onMoveStart: (event: React.MouseEvent) => void;
   onRotateStart: (event: React.MouseEvent) => void;
+  onResizeStart?: (event: React.MouseEvent, handle: ResizeHandle) => void;
 }) {
   return (
     <>
@@ -253,6 +562,30 @@ function PlacedItemChrome({
               strokeLinecap="round"
             />
           </g>
+
+          {resizable && onResizeStart
+            ? RESIZE_HANDLES.map(({ handle, x, y, cursor }) => {
+                const handleX = x(width);
+                const handleY = y(height);
+                return (
+                  <rect
+                    key={handle}
+                    x={handleX - RESIZE_HANDLE_SIZE / 2}
+                    y={handleY - RESIZE_HANDLE_SIZE / 2}
+                    width={RESIZE_HANDLE_SIZE}
+                    height={RESIZE_HANDLE_SIZE}
+                    fill="white"
+                    stroke={color}
+                    strokeWidth={1.25}
+                    style={{ cursor }}
+                    onMouseDown={(event) => {
+                      event.stopPropagation();
+                      onResizeStart(event, handle);
+                    }}
+                  />
+                );
+              })
+            : null}
         </>
       ) : null}
     </>
@@ -261,31 +594,68 @@ function PlacedItemChrome({
 
 function usePlacedItemInteraction({
   annotation,
+  pageWidth,
+  pageHeight,
   getPagePoint,
+  getMoveScale,
   onSelect,
   onUpdate,
+  resizable = false,
 }: {
   annotation: { x: number; y: number; width: number; height: number; rotation: number };
+  pageWidth: number;
+  pageHeight: number;
   getPagePoint: (clientX: number, clientY: number) => { x: number; y: number };
+  getMoveScale: () => { scaleX: number; scaleY: number } | null;
   onSelect: () => void;
-  onUpdate: (patch: { x?: number; y?: number; rotation?: number }) => void;
+  onUpdate: (patch: {
+    x?: number;
+    y?: number;
+    width?: number;
+    height?: number;
+    rotation?: number;
+  }) => void;
+  resizable?: boolean;
 }) {
-  const [interaction, setInteraction] = useState<TextInteraction | null>(null);
+  const [interaction, setInteraction] = useState<
+    TextInteraction | ResizeInteraction | null
+  >(null);
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
 
   useEffect(() => {
     if (!interaction) return;
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const point = getPagePoint(event.clientX, event.clientY);
-
+    const handlePointerMove = (event: PointerEvent) => {
       if (interaction.kind === "move") {
+        const delta = clientDeltaToNormalized(
+          event.clientX - interaction.startClientX,
+          event.clientY - interaction.startClientY,
+          interaction,
+          pageWidth,
+          pageHeight,
+        );
         const next = clampPosition(
-          interaction.origX + point.x - interaction.startX,
-          interaction.origY + point.y - interaction.startY,
+          interaction.origX + delta.x,
+          interaction.origY + delta.y,
           annotation.width,
           annotation.height,
         );
-        onUpdate(next);
+        onUpdateRef.current(next);
+        return;
+      }
+
+      const point = getPagePoint(event.clientX, event.clientY);
+
+      if (interaction.kind === "resize") {
+        const localPoint = pageToLocalPoint(point.x, point.y, {
+          x: interaction.origX,
+          y: interaction.origY,
+          width: interaction.origWidth,
+          height: interaction.origHeight,
+          rotation: interaction.origRotation,
+        });
+        onUpdateRef.current(computeResizedBox(interaction.handle, localPoint, interaction));
         return;
       }
 
@@ -296,34 +666,38 @@ function usePlacedItemInteraction({
         ) *
           180) /
         Math.PI;
-      onUpdate({
+      onUpdateRef.current({
         rotation: Math.round(
           interaction.origRotation + (angle - interaction.startAngle),
         ),
       });
     };
 
-    const handleMouseUp = () => setInteraction(null);
+    const handlePointerUp = () => setInteraction(null);
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [annotation.height, annotation.width, getPagePoint, interaction, onUpdate]);
+  }, [annotation.height, annotation.width, getPagePoint, interaction, pageHeight, pageWidth]);
 
-  const startMove = (event: React.MouseEvent) => {
+  const startMove = (event: React.PointerEvent | React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
     onSelect();
-    const point = getPagePoint(event.clientX, event.clientY);
+    const scale = getMoveScale();
+    if (!scale) return;
+
     setInteraction({
       kind: "move",
-      startX: point.x,
-      startY: point.y,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
       origX: annotation.x,
       origY: annotation.y,
+      scaleX: scale.scaleX,
+      scaleY: scale.scaleY,
     });
   };
 
@@ -346,136 +720,303 @@ function usePlacedItemInteraction({
     });
   };
 
-  return { interaction, startMove, startRotate };
+  const startResize = (event: React.PointerEvent | React.MouseEvent, handle: ResizeHandle) => {
+    if (!resizable) return;
+    event.stopPropagation();
+    event.preventDefault();
+    onSelect();
+
+    const centerX = annotation.x + annotation.width / 2;
+    const centerY = annotation.y + annotation.height / 2;
+    const anchorLocal = anchorOffsetForHandle(
+      handle,
+      annotation.width,
+      annotation.height,
+    );
+    const anchorRotated = rotatePoint(
+      anchorLocal.x,
+      anchorLocal.y,
+      annotation.rotation,
+    );
+
+    setInteraction({
+      kind: "resize",
+      handle,
+      origX: annotation.x,
+      origY: annotation.y,
+      origWidth: annotation.width,
+      origHeight: annotation.height,
+      origRotation: annotation.rotation,
+      anchorPageX: centerX + anchorRotated.x,
+      anchorPageY: centerY + anchorRotated.y,
+    });
+  };
+
+  return { interaction, startMove, startRotate, startResize };
 }
 
 function TextAnnotationView({
   annotation,
   selected,
+  isEditing,
   pageWidth,
   pageHeight,
   getPagePoint,
+  getMoveScale,
   onSelect,
   onUpdate,
+  onStartEdit,
+  onStopEdit,
 }: {
   annotation: TextAnnotation;
   selected: boolean;
+  isEditing: boolean;
   pageWidth: number;
   pageHeight: number;
   getPagePoint: (clientX: number, clientY: number) => { x: number; y: number };
+  getMoveScale: () => { scaleX: number; scaleY: number } | null;
   onSelect: () => void;
   onUpdate: (patch: Partial<TextAnnotation>) => void;
+  onStartEdit: () => void;
+  onStopEdit: () => void;
 }) {
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const isPlaceholder = annotation.text === "Text";
-  const [editing, setEditing] = useState(isPlaceholder);
-  const { interaction, startMove, startRotate } = usePlacedItemInteraction({
+  const inputRef = useRef<HTMLInputElement>(null);
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
+  const isPlaceholder = annotation.text === TEXT_PLACEHOLDER;
+  const [hovered, setHovered] = useState(false);
+  const { interaction, startMove, startResize } = usePlacedItemInteraction({
     annotation,
+    pageWidth,
+    pageHeight,
     getPagePoint,
+    getMoveScale,
     onSelect,
     onUpdate,
+    resizable: true,
   });
-  const fontStyles = textFontStyles(annotation);
+  const contentStyles = textContentStyles(annotation);
+  const textOpacity = (annotation.opacity ?? 100) / 100;
+  const lineHeightPx = annotation.fontSize + TEXT_LINE_PADDING * 2;
 
   useEffect(() => {
-    if (!isPlaceholder || !selected) return;
+    if (!isEditing) return;
 
-    setEditing(true);
-    const frame = requestAnimationFrame(() => {
-      textareaRef.current?.focus();
-      textareaRef.current?.select();
+    const frame = window.requestAnimationFrame(() => {
+      const input = inputRef.current;
+      if (!input) return;
+      input.focus();
+      if (isPlaceholder) {
+        input.select();
+        window.setTimeout(() => input.select(), 0);
+      }
     });
 
-    return () => cancelAnimationFrame(frame);
-  }, [annotation.id, isPlaceholder, selected]);
+    return () => window.cancelAnimationFrame(frame);
+  }, [annotation.id, isEditing, isPlaceholder]);
+
+  useEffect(() => {
+    const nextSize = singleLineBoxSize(
+      annotation.text,
+      annotation.fontSize,
+      annotation.fontFamily ?? "helvetica",
+      annotation.bold,
+      annotation.italic,
+      pageWidth,
+      pageHeight,
+    );
+
+    if (
+      Math.abs(annotation.width - nextSize.width) > 0.001 ||
+      Math.abs(annotation.height - nextSize.height) > 0.001
+    ) {
+      onUpdateRef.current(nextSize);
+    }
+  }, [
+    annotation.bold,
+    annotation.fontFamily,
+    annotation.fontSize,
+    annotation.italic,
+    annotation.text,
+    pageHeight,
+    pageWidth,
+  ]);
 
   const x = annotation.x * pageWidth;
   const y = annotation.y * pageHeight;
   const width = annotation.width * pageWidth;
   const height = annotation.height * pageHeight;
-  const showHandles = selected || interaction !== null;
-  const contentTop = showHandles ? MOVE_BAR_HEIGHT : 0;
-  const contentHeight = height - contentTop;
+  const showHandles = hovered || selected || interaction !== null;
 
   const stopPointer = (event: React.MouseEvent) => {
     event.stopPropagation();
   };
 
+  const handleTextChange = (rawValue: string) => {
+    let text = rawValue.replace(/[\r\n]/g, "");
+    if (
+      annotation.text === TEXT_PLACEHOLDER &&
+      text.startsWith(TEXT_PLACEHOLDER) &&
+      text.length > TEXT_PLACEHOLDER.length
+    ) {
+      text = text.slice(TEXT_PLACEHOLDER.length);
+    }
+    onUpdate({
+      text,
+      ...singleLineBoxSize(
+        text,
+        annotation.fontSize,
+        annotation.fontFamily,
+        annotation.bold,
+        annotation.italic,
+        pageWidth,
+        pageHeight,
+      ),
+    });
+  };
+
+  const handleMoveStart = (event: React.PointerEvent) => {
+    inputRef.current?.blur();
+    startMove(event);
+  };
+
   return (
     <g
       transform={`translate(${x + width / 2}, ${y + height / 2}) rotate(${annotation.rotation}) translate(${-width / 2}, ${-height / 2})`}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onMouseDown={stopPointer}
       onClick={(event) => {
         event.stopPropagation();
-        onSelect();
-        if (isPlaceholder) {
-          setEditing(true);
+        if (isEditing) return;
+        if (isPlaceholder && selected) {
+          onStartEdit();
+          return;
         }
+        onSelect();
       }}
     >
-      <PlacedItemChrome
-        width={width}
-        height={height}
-        color={annotation.color}
-        showHandles={showHandles}
-        editing={editing}
-        interaction={interaction}
-        onMoveStart={startMove}
-        onRotateStart={startRotate}
-      />
+      {annotation.backgroundColor ? (
+        <rect
+          x={0}
+          y={0}
+          width={width}
+          height={height}
+          fill={annotation.backgroundColor}
+          fillOpacity={textOpacity}
+          pointerEvents="none"
+        />
+      ) : null}
 
-      {editing ? (
+      <TextBoxBorder width={width} height={height} showHandles={showHandles} />
+
+      {isEditing ? (
         <foreignObject
           x={0}
-          y={contentTop}
+          y={0}
           width={width}
-          height={Math.max(contentHeight, annotation.fontSize + 8)}
+          height={lineHeightPx}
         >
-          <div className="h-full w-full">
-            <textarea
-              ref={textareaRef}
-              autoFocus={isPlaceholder}
+          <div className="h-full w-full overflow-hidden">
+            <input
+              ref={inputRef}
+              type="text"
+              autoFocus={selected}
               value={annotation.text}
-              onChange={(event) => onUpdate({ text: event.target.value })}
-              onBlur={() => {
-                if (isPlaceholder) return;
-                setEditing(false);
-              }}
-              onMouseDown={stopPointer}
-              onDoubleClick={(event) => {
-                event.stopPropagation();
-                setEditing(true);
-              }}
-              onKeyDown={(event) => {
-                event.stopPropagation();
-                if (event.key === "Escape") {
-                  setEditing(false);
+              onChange={(event) => handleTextChange(event.target.value)}
+              onFocus={(event) => {
+                if (isPlaceholder) {
+                  event.target.select();
                 }
               }}
-              className="h-full w-full resize-none border border-blue-400 bg-white/95 p-1 text-gray-900 outline-none"
-              style={{ fontSize: annotation.fontSize, ...fontStyles }}
+              onBlur={() => {
+                onStopEdit();
+              }}
+              onMouseDown={stopPointer}
+              onKeyDown={(event) => {
+                event.stopPropagation();
+                if (
+                  isPlaceholder &&
+                  event.key.length === 1 &&
+                  !event.ctrlKey &&
+                  !event.metaKey &&
+                  !event.altKey
+                ) {
+                  event.preventDefault();
+                  handleTextChange(event.key);
+                  return;
+                }
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  onStopEdit();
+                }
+                if (event.key === "Escape") {
+                  onStopEdit();
+                }
+              }}
+              className="block h-full w-full border-0 bg-transparent px-1 outline-none"
+              style={{
+                fontSize: annotation.fontSize,
+                lineHeight: `${annotation.fontSize}px`,
+                ...contentStyles,
+              }}
             />
           </div>
         </foreignObject>
       ) : (
-        <text
-          x={4}
-          y={contentTop + annotation.fontSize}
-          fill={annotation.color}
-          fontSize={annotation.fontSize}
-          fontFamily={fontStyles.fontFamily}
-          fontWeight={fontStyles.fontWeight}
-          fontStyle={fontStyles.fontStyle}
-          onDoubleClick={(event) => {
-            event.stopPropagation();
-            onSelect();
-            setEditing(true);
-          }}
-          style={{ userSelect: "none", pointerEvents: "all" }}
-        >
-          {annotation.text}
-        </text>
+        <>
+          <text
+            x={
+              (annotation.textAlign ?? "left") === "center"
+                ? width / 2
+                : (annotation.textAlign ?? "left") === "right"
+                  ? width - TEXT_LINE_PADDING
+                  : TEXT_LINE_PADDING
+            }
+            y={annotation.fontSize + TEXT_LINE_PADDING / 2}
+            fill={annotation.color}
+            fillOpacity={textOpacity}
+            fontSize={annotation.fontSize}
+            fontFamily={contentStyles.fontFamily}
+            fontWeight={contentStyles.fontWeight}
+            fontStyle={contentStyles.fontStyle}
+            textDecoration={contentStyles.textDecoration}
+            textAnchor={
+              (annotation.textAlign ?? "left") === "center"
+                ? "middle"
+                : (annotation.textAlign ?? "left") === "right"
+                  ? "end"
+                  : "start"
+            }
+            style={{ userSelect: "none", pointerEvents: "none" }}
+          >
+            {annotation.text}
+          </text>
+          <rect
+            x={0}
+            y={0}
+            width={width}
+            height={height}
+            fill="transparent"
+            style={{
+              cursor: interaction?.kind === "move" ? "grabbing" : "grab",
+            }}
+            onPointerDown={handleMoveStart}
+            onDoubleClick={(event) => {
+              event.stopPropagation();
+              onSelect();
+              onStartEdit();
+            }}
+          />
+        </>
       )}
+
+      <TextBoxHandles
+        width={width}
+        height={height}
+        showHandles={showHandles && !isEditing}
+        onResizeStart={startResize}
+      />
     </g>
   );
 }
@@ -486,6 +1027,7 @@ function ImageAnnotationView({
   pageWidth,
   pageHeight,
   getPagePoint,
+  getMoveScale,
   onSelect,
   onUpdate,
 }: {
@@ -494,14 +1036,19 @@ function ImageAnnotationView({
   pageWidth: number;
   pageHeight: number;
   getPagePoint: (clientX: number, clientY: number) => { x: number; y: number };
+  getMoveScale: () => { scaleX: number; scaleY: number } | null;
   onSelect: () => void;
   onUpdate: (patch: Partial<ImageAnnotation>) => void;
 }) {
-  const { interaction, startMove, startRotate } = usePlacedItemInteraction({
+  const { interaction, startMove, startRotate, startResize } = usePlacedItemInteraction({
     annotation,
+    pageWidth,
+    pageHeight,
     getPagePoint,
+    getMoveScale,
     onSelect,
     onUpdate,
+    resizable: true,
   });
 
   const x = annotation.x * pageWidth;
@@ -530,9 +1077,11 @@ function ImageAnnotationView({
         height={height}
         color={annotation.color}
         showHandles={showHandles}
+        resizable
         interaction={interaction}
         onMoveStart={startMove}
         onRotateStart={startRotate}
+        onResizeStart={startResize}
       />
       <image
         href={annotation.imageData}
@@ -550,13 +1099,17 @@ function ImageAnnotationView({
 
 function useShapeInteraction({
   annotation,
-  getPagePoint,
+  pageWidth,
+  pageHeight,
+  getMoveScale,
   onSelect,
   onUpdate,
   enabled,
 }: {
   annotation: ShapeAnnotation;
-  getPagePoint: (clientX: number, clientY: number) => { x: number; y: number };
+  pageWidth: number;
+  pageHeight: number;
+  getMoveScale: () => { scaleX: number; scaleY: number } | null;
   onSelect: () => void;
   onUpdate: (patch: Partial<ShapeAnnotation>) => void;
   enabled: boolean;
@@ -564,46 +1117,56 @@ function useShapeInteraction({
   const [interaction, setInteraction] = useState<ShapeMoveInteraction | null>(
     null,
   );
+  const onUpdateRef = useRef(onUpdate);
+  onUpdateRef.current = onUpdate;
 
   useEffect(() => {
     if (!interaction) return;
 
-    const handleMouseMove = (event: MouseEvent) => {
-      const point = getPagePoint(event.clientX, event.clientY);
-      const dx = point.x - interaction.startX;
-      const dy = point.y - interaction.startY;
-      onUpdate({
-        x1: interaction.origX1 + dx,
-        y1: interaction.origY1 + dy,
-        x2: interaction.origX2 + dx,
-        y2: interaction.origY2 + dy,
+    const handlePointerMove = (event: PointerEvent) => {
+      const delta = clientDeltaToNormalized(
+        event.clientX - interaction.startClientX,
+        event.clientY - interaction.startClientY,
+        interaction,
+        pageWidth,
+        pageHeight,
+      );
+      onUpdateRef.current({
+        x1: interaction.origX1 + delta.x,
+        y1: interaction.origY1 + delta.y,
+        x2: interaction.origX2 + delta.x,
+        y2: interaction.origY2 + delta.y,
       });
     };
 
-    const handleMouseUp = () => setInteraction(null);
+    const handlePointerUp = () => setInteraction(null);
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerup", handlePointerUp);
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
     };
-  }, [getPagePoint, interaction, onUpdate]);
+  }, [interaction, pageHeight, pageWidth]);
 
   const startMove = (event: React.MouseEvent) => {
     if (!enabled) return;
     event.stopPropagation();
     event.preventDefault();
     onSelect();
-    const point = getPagePoint(event.clientX, event.clientY);
+    const scale = getMoveScale();
+    if (!scale) return;
+
     setInteraction({
       kind: "move",
-      startX: point.x,
-      startY: point.y,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
       origX1: annotation.x1,
       origY1: annotation.y1,
       origX2: annotation.x2,
       origY2: annotation.y2,
+      scaleX: scale.scaleX,
+      scaleY: scale.scaleY,
     });
   };
 
@@ -616,7 +1179,7 @@ function ShapeAnnotationView({
   activeTool,
   pageWidth,
   pageHeight,
-  getPagePoint,
+  getMoveScale,
   onSelect,
   onUpdate,
 }: {
@@ -625,14 +1188,16 @@ function ShapeAnnotationView({
   activeTool: EditTool;
   pageWidth: number;
   pageHeight: number;
-  getPagePoint: (clientX: number, clientY: number) => { x: number; y: number };
+  getMoveScale: () => { scaleX: number; scaleY: number } | null;
   onSelect: () => void;
   onUpdate: (patch: Partial<ShapeAnnotation>) => void;
 }) {
   const canMove = selected && activeTool === "select";
   const { interaction, startMove } = useShapeInteraction({
     annotation,
-    getPagePoint,
+    pageWidth,
+    pageHeight,
+    getMoveScale,
     onSelect,
     onUpdate,
     enabled: canMove,
@@ -799,6 +1364,7 @@ export function EditPageCanvas({
   activeTool,
   activeShape,
   selectedId,
+  editingTextId = null,
   color,
   strokeWidth,
   fontSize,
@@ -810,6 +1376,7 @@ export function EditPageCanvas({
   onUpdate,
   onRemove,
   onTextPlaced,
+  onEditingTextChange = () => undefined,
 }: EditPageCanvasProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [draft, setDraft] = useState<DraftState | null>(null);
@@ -820,6 +1387,8 @@ export function EditPageCanvas({
     if (!svg) return { x: 0, y: 0 };
     return getPagePointFromClient(clientX, clientY, svg);
   }, []);
+
+  const getMoveScale = useCallback(() => getSvgScale(svgRef.current), []);
 
   useEffect(() => {
     setDraft(null);
@@ -890,15 +1459,24 @@ export function EditPageCanvas({
 
       if (activeTool === "text") {
         const id = createId();
+        const initialSize = singleLineBoxSize(
+          TEXT_PLACEHOLDER,
+          fontSize,
+          fontFamily,
+          bold,
+          italic,
+          pageWidth,
+          pageHeight,
+        );
         onAdd({
           id,
           type: "text",
           pageIndex,
-          x: Math.max(0, point.x - 0.125),
-          y: Math.max(0, point.y - 0.03),
-          width: 0.25,
-          height: 0.08,
-          text: "Text",
+          x: Math.max(0, point.x - initialSize.width / 2),
+          y: Math.max(0, point.y - initialSize.height / 2),
+          width: initialSize.width,
+          height: initialSize.height,
+          text: TEXT_PLACEHOLDER,
           fontSize,
           fontFamily,
           bold,
@@ -907,7 +1485,8 @@ export function EditPageCanvas({
           color,
           strokeWidth,
         });
-        onTextPlaced?.();
+        onEditingTextChange?.(id);
+        onTextPlaced?.(id);
         return;
       }
 
@@ -929,7 +1508,7 @@ export function EditPageCanvas({
         });
       }
     },
-    [activeShape, activeTool, bold, color, fontFamily, fontSize, italic, onAdd, onSelect, onTextPlaced, pageIndex, strokeWidth],
+    [activeShape, activeTool, bold, color, fontFamily, fontSize, italic, onAdd, onEditingTextChange, onSelect, onTextPlaced, pageHeight, pageIndex, pageWidth, strokeWidth],
   );
 
   useEffect(() => {
@@ -965,7 +1544,7 @@ export function EditPageCanvas({
       ref={svgRef}
       viewBox={`0 0 ${pageWidth} ${pageHeight}`}
       className={cn(
-        "absolute inset-0 h-full w-full",
+        "absolute inset-0 h-full w-full touch-none overflow-hidden",
         activeTool === "select" && "cursor-default",
         activeTool === "text" && "cursor-text",
         (activeTool === "draw" || activeTool === "shape") && "cursor-crosshair",
@@ -987,11 +1566,15 @@ export function EditPageCanvas({
               key={annotation.id}
               annotation={annotation}
               selected={selectedId === annotation.id}
+              isEditing={editingTextId === annotation.id}
               pageWidth={pageWidth}
               pageHeight={pageHeight}
               getPagePoint={getPagePoint}
+              getMoveScale={getMoveScale}
               onSelect={() => onSelect(annotation.id)}
               onUpdate={(patch) => onUpdate(annotation.id, patch)}
+              onStartEdit={() => onEditingTextChange(annotation.id)}
+              onStopEdit={() => onEditingTextChange(null)}
             />
           );
         }
@@ -1005,6 +1588,7 @@ export function EditPageCanvas({
               pageWidth={pageWidth}
               pageHeight={pageHeight}
               getPagePoint={getPagePoint}
+              getMoveScale={getMoveScale}
               onSelect={() => onSelect(annotation.id)}
               onUpdate={(patch) => onUpdate(annotation.id, patch)}
             />
@@ -1045,7 +1629,7 @@ export function EditPageCanvas({
               activeTool={activeTool}
               pageWidth={pageWidth}
               pageHeight={pageHeight}
-              getPagePoint={getPagePoint}
+              getMoveScale={getMoveScale}
               onSelect={() => onSelect(annotation.id)}
               onUpdate={(patch) => onUpdate(annotation.id, patch)}
             />

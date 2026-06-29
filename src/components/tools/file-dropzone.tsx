@@ -7,7 +7,8 @@ import {
   useContext,
   type ReactNode,
 } from "react";
-import { useDropzone, type Accept } from "react-dropzone";
+import { useDropzone, type Accept, type FileRejection } from "react-dropzone";
+import { toast } from "sonner";
 
 import {
   DropzoneChooseButton,
@@ -15,6 +16,7 @@ import {
   DropzoneHint,
   DropzoneSurface,
 } from "@/components/tools/dropzone-content";
+import { PDF_ACCEPT_STRING } from "@/lib/pdf/constants";
 import { cn } from "@/lib/utils";
 
 type FileDropzoneOptions = {
@@ -45,6 +47,10 @@ function useFileDropzoneContext() {
   return context;
 }
 
+function isPdfByName(file: File): boolean {
+  return file.name.toLowerCase().endsWith(".pdf");
+}
+
 export function FileDropzoneProvider({
   onFilesAccepted,
   accept,
@@ -54,23 +60,57 @@ export function FileDropzoneProvider({
   className,
 }: FileDropzoneOptions) {
   const onDrop = useCallback(
-    (acceptedFiles: File[]) => {
+    (acceptedFiles: File[], fileRejections: FileRejection[]) => {
       if (acceptedFiles.length > 0) {
         onFilesAccepted(acceptedFiles);
+        return;
+      }
+
+      const rejectedPdfs = fileRejections
+        .map((rejection) => rejection.file)
+        .filter(isPdfByName);
+
+      if (rejectedPdfs.length > 0) {
+        onFilesAccepted(rejectedPdfs);
+        return;
+      }
+
+      if (fileRejections.length > 0) {
+        const message =
+          fileRejections[0]?.errors[0]?.message ?? "Unsupported file type.";
+        toast.error(message);
       }
     },
     [onFilesAccepted],
   );
 
-  const { getRootProps, getInputProps, isDragActive, isDragReject, open } =
-    useDropzone({
-      onDrop,
-      accept,
-      multiple,
-      disabled,
-      noClick: true,
-      noKeyboard: disabled,
-    });
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive,
+    isDragReject,
+    open: dropzoneOpen,
+    inputRef,
+  } = useDropzone({
+    onDrop,
+    accept,
+    multiple,
+    disabled,
+    noClick: true,
+    noKeyboard: disabled,
+    useFsAccessApi: false,
+  });
+
+  const open = useCallback(() => {
+    if (disabled) return;
+
+    if (dropzoneOpen) {
+      dropzoneOpen();
+      return;
+    }
+
+    inputRef.current?.click();
+  }, [disabled, dropzoneOpen, inputRef]);
 
   return (
     <FileDropzoneContext.Provider
@@ -80,7 +120,11 @@ export function FileDropzoneProvider({
         {...getRootProps()}
         className={cn("relative outline-none", className)}
       >
-        <input {...getInputProps()} />
+        <input
+          {...getInputProps({
+            accept: PDF_ACCEPT_STRING,
+          })}
+        />
         {isDragActive && !disabled ? (
           <div
             className={cn(
@@ -124,7 +168,7 @@ export function FileDropzone({
     >
       <DropzoneFileIcons />
       <DropzoneChooseButton
-        onClick={open}
+        onClick={() => open()}
         disabled={disabled}
         label={selectLabel}
       />

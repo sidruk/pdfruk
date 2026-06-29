@@ -1,13 +1,8 @@
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { getDailyStats, getTodayKey, incrementPageView, incrementToolUse } from "@/lib/analytics/store";
 
 describe("analytics store", () => {
-  beforeEach(() => {
-    delete process.env.UPSTASH_REDIS_REST_URL;
-    delete process.env.UPSTASH_REDIS_REST_TOKEN;
-  });
-
   it("tracks page views and tool uses in memory", async () => {
     const date = "2099-01-15";
 

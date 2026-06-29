@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Bold,
@@ -10,7 +10,6 @@ import {
   FileText,
   Hand,
   ImageIcon,
-  Info,
   Italic,
   Loader2,
   Minus,
@@ -27,11 +26,15 @@ import {
 } from "lucide-react";
 
 import { CreateSignatureModal } from "@/components/pdf/create-signature-modal";
+import { EditLayersPanel } from "@/components/pdf/edit-layers-panel";
 import { EditPageCanvas } from "@/components/pdf/edit-page-canvas";
+import { TextFormattingToolbar } from "@/components/pdf/text-formatting-toolbar";
 import { DownloadResult } from "@/components/tools/download-result";
 import { ProgressBar } from "@/components/tools/progress-bar";
 import { usePdfPageView } from "@/hooks/use-pdf-page-view";
 import { usePdfThumbnails } from "@/hooks/use-pdf-thumbnails";
+import { usePdfViewerAutoFit } from "@/hooks/use-pdf-viewer-auto-fit";
+import { PDF_VIEWER_BASE_SCALE } from "@/lib/pdf/fit-zoom";
 import { cn } from "@/lib/utils";
 import type {
   EditAnnotation,
@@ -54,6 +57,7 @@ type EditWorkspaceProps = {
   pageAnnotations: EditAnnotation[];
   selectedId: string | null;
   selectedAnnotation: EditAnnotation | null;
+  editingTextId: string | null;
   color: string;
   strokeWidth: number;
   fontSize: number;
@@ -85,15 +89,21 @@ type EditWorkspaceProps = {
   onAdd: (annotation: EditAnnotation) => void;
   onUpdate: (id: string, patch: Partial<EditAnnotation>) => void;
   onRemove: (id: string) => void;
+  onRemoveAllOnPage: (pageIndex: number) => void;
+  onReorderPageAnnotation: (
+    pageIndex: number,
+    fromIndex: number,
+    toIndex: number,
+  ) => void;
+  onStartEditingText: (id: string) => void;
+  onStopEditingText: () => void;
   onProcess: () => void;
   onReset: () => void;
 };
 
 
-const BASE_SCALE = 1.5;
-
 const FONT_FAMILIES: { id: EditFontFamily; label: string }[] = [
-  { id: "helvetica", label: "Helvetica" },
+  { id: "helvetica", label: "Arial" },
   { id: "times", label: "Times New Roman" },
   { id: "courier", label: "Courier" },
 ];
@@ -110,11 +120,13 @@ function ModeTab({
   label,
   icon: Icon,
   onClick,
+  dark = false,
 }: {
   active: boolean;
   label: string;
   icon: typeof Pencil;
   onClick: () => void;
+  dark?: boolean;
 }) {
   return (
     <button
@@ -122,9 +134,13 @@ function ModeTab({
       onClick={onClick}
       className={cn(
         "inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-colors",
-        active
-          ? "bg-brand-charcoal text-white"
-          : "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
+        dark
+          ? active
+            ? "bg-black/30 text-white"
+            : "text-gray-300 hover:bg-white/10 hover:text-white"
+          : active
+            ? "bg-brand-charcoal text-white"
+            : "text-gray-500 hover:bg-gray-100 hover:text-gray-700",
       )}
     >
       <Icon className="h-4 w-4" strokeWidth={1.75} />
@@ -139,12 +155,14 @@ function ToolbarIcon({
   icon: Icon,
   disabled,
   onClick,
+  dark = false,
 }: {
   active?: boolean;
   label: string;
   icon?: typeof Hand;
   disabled?: boolean;
   onClick?: () => void;
+  dark?: boolean;
 }) {
   return (
     <button
@@ -156,10 +174,14 @@ function ToolbarIcon({
       className={cn(
         "flex h-9 w-9 items-center justify-center rounded-md text-sm transition-colors",
         disabled
-          ? "cursor-not-allowed text-gray-300"
-          : active
-            ? "bg-brand-charcoal text-white"
-            : "text-gray-600 hover:bg-gray-100",
+          ? "cursor-not-allowed text-gray-500"
+          : dark
+            ? active
+              ? "bg-white/20 text-white"
+              : "text-gray-200 hover:bg-white/10 hover:text-white"
+            : active
+              ? "bg-brand-charcoal text-white"
+              : "text-gray-600 hover:bg-gray-100",
       )}
     >
       {Icon ? (
@@ -250,6 +272,7 @@ export function EditWorkspace({
   pageAnnotations,
   selectedId,
   selectedAnnotation,
+  editingTextId,
   color,
   strokeWidth,
   fontSize,
@@ -278,6 +301,10 @@ export function EditWorkspace({
   onAdd,
   onUpdate,
   onRemove,
+  onRemoveAllOnPage,
+  onReorderPageAnnotation,
+  onStartEditingText,
+  onStopEditingText,
   onProcess,
   onReset,
 }: EditWorkspaceProps) {
@@ -292,20 +319,25 @@ export function EditWorkspace({
   const { render, isLoading: isPageLoading } = usePdfPageView(
     file.file,
     currentPage,
-    BASE_SCALE * zoom,
+    PDF_VIEWER_BASE_SCALE * zoom,
   );
+  const { handleFitToPage } = usePdfViewerAutoFit({
+    containerRef: viewerContainerRef,
+    render,
+    isPageLoading,
+    currentPage,
+    fileId: file.id,
+    zoom,
+    onFit: onFitToWidth,
+  });
 
   useEffect(() => {
     if (isLoading) return;
 
-    void renderThumbnail(currentPage);
-    if (currentPage > 0) {
-      void renderThumbnail(currentPage - 1);
+    for (let pageIndex = 0; pageIndex < file.pageCount; pageIndex++) {
+      void renderThumbnail(pageIndex);
     }
-    if (currentPage < file.pageCount - 1) {
-      void renderThumbnail(currentPage + 1);
-    }
-  }, [currentPage, file.pageCount, isLoading, renderThumbnail]);
+  }, [file.id, file.pageCount, isLoading, renderThumbnail]);
 
   const selectedText =
     selectedAnnotation?.type === "text" ? selectedAnnotation : null;
@@ -315,27 +347,21 @@ export function EditWorkspace({
   const showStyleControls =
     activeTool !== "select" || selectedId !== null;
 
-  const handleFitToWidth = useCallback(() => {
-    const container = viewerContainerRef.current;
-    if (!container || !render || zoom <= 0) return;
-
-    const style = window.getComputedStyle(container);
-    const availableWidth =
-      container.clientWidth -
-      parseFloat(style.paddingLeft) -
-      parseFloat(style.paddingRight);
-
-    if (availableWidth <= 0) return;
-
-    const pageWidthAtBaseScale = render.width / zoom;
-    onFitToWidth(availableWidth / pageWidthAtBaseScale);
-  }, [onFitToWidth, render, zoom]);
+  const showStrokeWidth =
+    activeTool === "draw" ||
+    activeTool === "shape" ||
+    (selectedAnnotation !== null &&
+      selectedAnnotation.type !== "text" &&
+      selectedAnnotation.type !== "image");
 
   return (
     <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
       <div className="flex min-h-[560px] min-w-0">
         {/* Page thumbnails */}
-        <div className="hidden w-28 shrink-0 flex-col gap-2 overflow-y-auto border-r border-gray-200 bg-gray-50 p-3 sm:flex">
+        <div className="relative z-10 hidden w-36 shrink-0 flex-col gap-2 overflow-y-auto border-r border-gray-200 bg-gray-50 p-3 sm:flex">
+          <p className="px-1 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Pages
+          </p>
           {isLoading && pages.length === 0 ? (
             <p className="p-2 text-xs text-gray-500">Loading...</p>
           ) : (
@@ -348,7 +374,6 @@ export function EditWorkspace({
                   key={page.pageIndex}
                   type="button"
                   onClick={() => onPageChange(page.pageIndex)}
-                  onMouseEnter={() => void renderThumbnail(page.pageIndex)}
                   className={cn(
                     "shrink-0 overflow-hidden rounded-md border bg-white transition-colors",
                     active
@@ -366,10 +391,13 @@ export function EditWorkspace({
                       />
                     ) : (
                       <div className="flex h-full items-center justify-center text-[10px] text-gray-400">
-                        ...
+                        {page.pageIndex + 1}
                       </div>
                     )}
                   </div>
+                  <p className="border-t border-gray-100 py-1 text-center text-[10px] text-gray-500">
+                    {page.pageIndex + 1}
+                  </p>
                 </button>
               );
             })
@@ -380,12 +408,13 @@ export function EditWorkspace({
           {/* Viewer column */}
           <div className="flex min-w-0 flex-1 flex-col">
             {/* Top toolbar */}
-            <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-gray-200 bg-white px-4 py-2.5">
+            <div className="flex shrink-0 flex-wrap items-center gap-3 border-b border-black/20 bg-[#3c3c3c] px-4 py-2.5">
               <div className="flex items-center gap-1">
                 <ModeTab
                   active
                   label="Edit"
                   icon={Pencil}
+                  dark
                   onClick={() => undefined}
                 />
               </div>
@@ -395,30 +424,47 @@ export function EditWorkspace({
                   active={activeTool === "select"}
                   label="Select"
                   icon={Hand}
+                  dark
                   onClick={() => onToolChange("select")}
                 />
                 <ToolbarIcon
                   label="Image"
                   icon={ImageIcon}
+                  dark
                   onClick={() => imageInputRef.current?.click()}
                 />
                 <ToolbarIcon
                   active={activeTool === "text"}
                   label="Add text"
                   icon={Type}
+                  dark
                   onClick={() => onToolChange("text")}
                 />
                 <ToolbarIcon
                   active={activeTool === "draw"}
                   label="Draw"
                   icon={Pencil}
+                  dark
                   onClick={() => onToolChange("draw")}
                 />
                 <ToolbarIcon
                   active={activeTool === "shape"}
                   label="Shapes"
                   icon={Shapes}
+                  dark
                   onClick={() => onToolChange("shape")}
+                />
+                <ToolbarIcon
+                  label="Signature"
+                  icon={Signature}
+                  dark
+                  onClick={() => setSignatureModalOpen(true)}
+                />
+                <ToolbarIcon
+                  label="PDF page"
+                  icon={FileText}
+                  dark
+                  onClick={() => pdfInputRef.current?.click()}
                 />
               </div>
               <input
@@ -429,6 +475,17 @@ export function EditWorkspace({
                 onChange={(event) => {
                   const nextFile = event.target.files?.[0];
                   if (nextFile) onAddImageFromFile(nextFile, "image");
+                  event.target.value = "";
+                }}
+              />
+              <input
+                ref={pdfInputRef}
+                type="file"
+                accept="application/pdf,.pdf"
+                className="hidden"
+                onChange={(event) => {
+                  const nextFile = event.target.files?.[0];
+                  if (nextFile) onAddImageFromFile(nextFile, "pdf");
                   event.target.value = "";
                 }}
               />
@@ -445,7 +502,6 @@ export function EditWorkspace({
                     key={page.pageIndex}
                     type="button"
                     onClick={() => onPageChange(page.pageIndex)}
-                    onMouseEnter={() => void renderThumbnail(page.pageIndex)}
                     className={cn(
                       "shrink-0 overflow-hidden rounded-md border bg-white transition-colors",
                       active
@@ -469,18 +525,33 @@ export function EditWorkspace({
             </div>
 
             {/* Page viewer */}
-            <div className="relative flex min-h-[420px] min-w-0 flex-1 flex-col bg-[#e8eaed]">
+            <div className="relative flex min-h-[480px] min-w-0 flex-1 flex-col bg-[#e8eaed]">
               <div
                 ref={viewerContainerRef}
-                className="flex flex-1 items-start justify-center overflow-auto p-4 sm:p-6"
+                className="flex min-h-0 flex-1 items-start justify-center overflow-auto overscroll-x-contain px-4 pb-4 pt-2 sm:px-6 sm:pb-6 sm:pt-2"
               >
                 {isPageLoading && !render ? (
                   <p className="text-sm text-gray-500">Loading page...</p>
                 ) : render ? (
                   <div
-                    className="relative shadow-lg"
+                    className="relative isolate overflow-hidden shadow-lg"
                     style={{ width: render.width, height: render.height }}
                   >
+                    {selectedText ? (
+                      <div className="pointer-events-none absolute inset-x-0 top-2 z-30 flex justify-center px-2">
+                        <TextFormattingToolbar
+                          variant="overlay"
+                          annotation={selectedText}
+                          onUpdate={(patch) =>
+                            onUpdate(
+                              selectedText.id,
+                              patch as Partial<TextAnnotation>,
+                            )
+                          }
+                          onRemove={() => onRemove(selectedText.id)}
+                        />
+                      </div>
+                    ) : null}
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={render.dataUrl}
@@ -498,6 +569,7 @@ export function EditWorkspace({
                       activeTool={activeTool}
                       activeShape={activeShape}
                       selectedId={selectedId}
+                      editingTextId={editingTextId}
                       color={color}
                       strokeWidth={strokeWidth}
                       fontSize={fontSize}
@@ -508,14 +580,24 @@ export function EditWorkspace({
                       onAdd={onAdd}
                       onUpdate={onUpdate}
                       onRemove={onRemove}
-                      onTextPlaced={() => onToolChange("select")}
+                      onTextPlaced={(textId) => {
+                        onToolChange("select");
+                        onStartEditingText(textId);
+                      }}
+                      onEditingTextChange={(id) => {
+                        if (id) {
+                          onStartEditingText(id);
+                        } else {
+                          onStopEditingText();
+                        }
+                      }}
                     />
                   </div>
                 ) : null}
               </div>
 
-              {/* Floating toolbar */}
-              <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1 rounded-lg bg-gray-800 px-2 py-1.5 text-white shadow-lg">
+              {/* Bottom toolbar */}
+              <div className="flex shrink-0 items-center justify-center gap-1 border-t border-black/20 bg-[#3c3c3c] px-3 py-2 text-white">
                 <button
                   type="button"
                   aria-label="Previous page"
@@ -559,8 +641,8 @@ export function EditWorkspace({
                 </button>
                 <button
                   type="button"
-                  aria-label="Fit to width"
-                  onClick={handleFitToWidth}
+                  aria-label="Fit to page"
+                  onClick={handleFitToPage}
                   disabled={!render}
                   className="rounded px-2 py-1.5 text-xs hover:bg-white/10 disabled:opacity-40"
                 >
@@ -570,7 +652,7 @@ export function EditWorkspace({
             </div>
           </div>
 
-          {/* Edit panel */}
+          {/* Right panel */}
           <div className="flex w-full min-w-0 shrink-0 flex-col border-t border-gray-200 lg:w-[340px] lg:border-l lg:border-t-0">
             <div className="space-y-3 border-b border-gray-100 px-5 py-4">
               <h2 className="text-center text-xl font-bold text-brand-charcoal">
@@ -591,51 +673,22 @@ export function EditWorkspace({
               />
             </div>
 
+            <EditLayersPanel
+              embedded
+              currentPage={currentPage}
+              annotations={pageAnnotations}
+              selectedId={selectedId}
+              editingTextId={editingTextId}
+              onSelect={(id) => onSelect(id)}
+              onEditText={onStartEditingText}
+              onRemove={onRemove}
+              onRemoveAll={() => onRemoveAllOnPage(currentPage)}
+              onReorder={(fromIndex, toIndex) =>
+                onReorderPageAnnotation(currentPage, fromIndex, toIndex)
+              }
+            />
+
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-5 py-4">
-              <div className="mb-4 flex gap-2 rounded-lg bg-blue-50 px-3 py-3 text-sm text-blue-800">
-                <Info
-                  className="mt-0.5 h-4 w-4 shrink-0 text-blue-600"
-                  aria-hidden
-                />
-                <p>
-                  Use the toolbar to add text, images, signatures, and PDF
-                  pages to your document.
-                </p>
-              </div>
-
-              <div className="mb-4 space-y-2 rounded-lg border border-gray-200 bg-gray-50/50 p-4">
-                <p className="text-sm font-semibold text-brand-charcoal">Insert</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSignatureModalOpen(true)}
-                    className="flex items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
-                  >
-                    <Signature className="h-4 w-4" />
-                    Signature
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => pdfInputRef.current?.click()}
-                    className="flex items-center justify-center gap-2 rounded-md border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
-                  >
-                    <FileText className="h-4 w-4" />
-                    PDF page
-                  </button>
-                </div>
-                <input
-                  ref={pdfInputRef}
-                  type="file"
-                  accept="application/pdf,.pdf"
-                  className="hidden"
-                  onChange={(event) => {
-                    const nextFile = event.target.files?.[0];
-                    if (nextFile) onAddImageFromFile(nextFile, "pdf");
-                    event.target.value = "";
-                  }}
-                />
-              </div>
-
               {activeTool === "shape" ? (
                 <div className="mb-4 grid grid-cols-4 gap-2">
                   {SHAPES.map((shape) => (
@@ -669,25 +722,27 @@ export function EditWorkspace({
                     />
                   </div>
 
-                  <div>
-                    <label
-                      htmlFor="edit-stroke"
-                      className="mb-1 block text-sm text-gray-600"
-                    >
-                      Stroke width: {strokeWidth}px
-                    </label>
-                    <input
-                      id="edit-stroke"
-                      type="range"
-                      min={1}
-                      max={12}
-                      value={strokeWidth}
-                      onChange={(event) =>
-                        onStrokeWidthChange(Number(event.target.value))
-                      }
-                      className="w-full"
-                    />
-                  </div>
+                  {showStrokeWidth ? (
+                    <div>
+                      <label
+                        htmlFor="edit-stroke"
+                        className="mb-1 block text-sm text-gray-600"
+                      >
+                        Stroke width: {strokeWidth}px
+                      </label>
+                      <input
+                        id="edit-stroke"
+                        type="range"
+                        min={1}
+                        max={12}
+                        value={strokeWidth}
+                        onChange={(event) =>
+                          onStrokeWidthChange(Number(event.target.value))
+                        }
+                        className="w-full"
+                      />
+                    </div>
+                  ) : null}
 
                   {activeTool === "text" || selectedText ? (
                     <>
@@ -849,6 +904,11 @@ export function EditWorkspace({
                     />
                   </div>
 
+                  <p className="text-xs text-muted-foreground">
+                    Drag corner or edge handles on the page to resize width and
+                    height.
+                  </p>
+
                   <button
                     type="button"
                     onClick={() => onRemove(selectedImage.id)}
@@ -875,14 +935,6 @@ export function EditWorkspace({
                   </button>
                 </div>
               ) : null}
-            </div>
-
-            <div className="min-w-0 border-t border-gray-100 px-5 py-4">
-              <ExportButton
-                onClick={onProcess}
-                disabled={!canProcess || isProcessing}
-                isProcessing={isProcessing}
-              />
             </div>
           </div>
         </div>

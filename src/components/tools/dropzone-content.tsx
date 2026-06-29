@@ -84,7 +84,10 @@ export function DropzoneChooseButton({
     <div className="flex overflow-hidden rounded-md shadow-md">
       <button
         type="button"
-        onClick={onClick}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClick();
+        }}
         disabled={disabled}
         className="inline-flex items-center gap-2 bg-white px-5 py-2.5 text-sm font-bold tracking-wide text-brand-charcoal transition-colors hover:bg-white/95 disabled:pointer-events-none disabled:opacity-70"
       >
@@ -93,7 +96,10 @@ export function DropzoneChooseButton({
       </button>
       <button
         type="button"
-        onClick={onClick}
+        onClick={(event) => {
+          event.stopPropagation();
+          onClick();
+        }}
         disabled={disabled}
         aria-label={`${label} options`}
         className="inline-flex items-center border-l border-border/60 bg-white px-2.5 py-2.5 text-brand-charcoal transition-colors hover:bg-white/95 disabled:pointer-events-none disabled:opacity-70"

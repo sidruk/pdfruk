@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import {
+  PDF_VIEWER_MAX_ZOOM,
+  PDF_VIEWER_MIN_ZOOM,
+} from "@/lib/pdf/fit-zoom";
 import { inspectPdfFile, validationErrorMessage } from "@/lib/pdf/validate";
 import { trackToolComplete } from "@/lib/analytics/track";
 import { renderPdfFilePageToDataUrl } from "@/lib/pdf/thumbnails";
@@ -35,6 +39,7 @@ export function useEditPdf() {
   const [activeShape, setActiveShape] = useState<ShapeKind>("rectangle");
   const [annotations, setAnnotations] = useState<EditAnnotation[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [editingTextId, setEditingTextId] = useState<string | null>(null);
   const [color, setColor] = useState(DEFAULT_COLOR);
   const [strokeWidth, setStrokeWidth] = useState(DEFAULT_STROKE);
   const [fontSize, setFontSize] = useState(DEFAULT_FONT_SIZE);
@@ -56,10 +61,17 @@ export function useEditPdf() {
     const nextFile = incoming[0];
     if (!nextFile) return;
 
+    if (!nextFile.name.toLowerCase().endsWith(".pdf")) {
+      toast.error("Only PDF files are supported.");
+      return;
+    }
+
     setResult(null);
     setAnnotations([]);
     setSelectedId(null);
+    setEditingTextId(null);
     setCurrentPage(0);
+    setZoom(1);
     setActiveTool("select");
 
     const inspection = await inspectPdfFile(nextFile);
@@ -76,9 +88,15 @@ export function useEditPdf() {
     });
   }, []);
 
+  const autoEditTextIdRef = useRef<string | null>(null);
+
   const addAnnotation = useCallback((annotation: EditAnnotation) => {
     setAnnotations((current) => [...current, annotation]);
     setSelectedId(annotation.id);
+    if (annotation.type === "text") {
+      autoEditTextIdRef.current = annotation.id;
+      setEditingTextId(annotation.id);
+    }
     setResult(null);
   }, []);
 
@@ -286,6 +304,7 @@ export function useEditPdf() {
   const removeAnnotation = useCallback((id: string) => {
     setAnnotations((current) => current.filter((annotation) => annotation.id !== id));
     setSelectedId((current) => (current === id ? null : current));
+    setEditingTextId((current) => (current === id ? null : current));
     setResult(null);
   }, []);
 
@@ -293,6 +312,90 @@ export function useEditPdf() {
     if (!selectedId) return;
     removeAnnotation(selectedId);
   }, [removeAnnotation, selectedId]);
+
+  const removeAllOnPage = useCallback(
+    (pageIndex: number) => {
+      setAnnotations((current) =>
+        current.filter((annotation) => annotation.pageIndex !== pageIndex),
+      );
+      setSelectedId((current) => {
+        if (!current) return null;
+        const selected = annotations.find((annotation) => annotation.id === current);
+        return selected?.pageIndex === pageIndex ? null : current;
+      });
+      setEditingTextId((current) => {
+        if (!current) return null;
+        const editing = annotations.find((annotation) => annotation.id === current);
+        return editing?.pageIndex === pageIndex ? null : current;
+      });
+      setResult(null);
+    },
+    [annotations],
+  );
+
+  const reorderPageAnnotation = useCallback(
+    (pageIndex: number, fromIndex: number, toIndex: number) => {
+      if (fromIndex === toIndex) return;
+
+      setAnnotations((current) => {
+        const pageIndices = current
+          .map((annotation, index) => ({ annotation, index }))
+          .filter(({ annotation }) => annotation.pageIndex === pageIndex);
+
+        if (
+          fromIndex < 0 ||
+          toIndex < 0 ||
+          fromIndex >= pageIndices.length ||
+          toIndex >= pageIndices.length
+        ) {
+          return current;
+        }
+
+        const fromGlobal = pageIndices[fromIndex].index;
+        const next = [...current];
+        const [moved] = next.splice(fromGlobal, 1);
+
+        const pageIndicesAfter = next
+          .map((annotation, index) => ({ annotation, index }))
+          .filter(({ annotation }) => annotation.pageIndex === pageIndex);
+
+        const insertBefore = pageIndicesAfter[toIndex]?.index ?? next.length;
+        next.splice(insertBefore, 0, moved);
+        return next;
+      });
+      setResult(null);
+    },
+    [],
+  );
+
+  const selectAnnotation = useCallback((id: string | null) => {
+    setSelectedId(id);
+    setEditingTextId((editingId) => {
+      if (id === null) {
+        autoEditTextIdRef.current = null;
+        return null;
+      }
+      if (id === autoEditTextIdRef.current) {
+        autoEditTextIdRef.current = null;
+        return id;
+      }
+      if (id === editingId) {
+        return editingId;
+      }
+      return null;
+    });
+  }, []);
+
+  const startEditingText = useCallback((id: string) => {
+    autoEditTextIdRef.current = null;
+    setSelectedId(id);
+    setEditingTextId(id);
+  }, []);
+
+  const stopEditingText = useCallback(() => {
+    autoEditTextIdRef.current = null;
+    setEditingTextId(null);
+  }, []);
 
   const pageAnnotations = annotations.filter(
     (annotation) => annotation.pageIndex === currentPage,
@@ -311,6 +414,7 @@ export function useEditPdf() {
     setActiveShape("rectangle");
     setAnnotations([]);
     setSelectedId(null);
+    setEditingTextId(null);
     setColor(DEFAULT_COLOR);
     setStrokeWidth(DEFAULT_STROKE);
     setFontSize(DEFAULT_FONT_SIZE);
@@ -397,21 +501,24 @@ export function useEditPdf() {
       if (!file) return;
       setCurrentPage(Math.max(0, Math.min(pageIndex, file.pageCount - 1)));
       setSelectedId(null);
+      setEditingTextId(null);
     },
     [file],
   );
 
   const zoomIn = useCallback(() => {
-    setZoom((current) => Math.min(current + 0.25, 3));
+    setZoom((current) => Math.min(current + 0.25, PDF_VIEWER_MAX_ZOOM));
   }, []);
 
   const zoomOut = useCallback(() => {
-    setZoom((current) => Math.max(current - 0.25, 0.5));
+    setZoom((current) => Math.max(current - 0.25, PDF_VIEWER_MIN_ZOOM));
   }, []);
 
   const fitToWidth = useCallback((targetZoom: number) => {
     if (!Number.isFinite(targetZoom) || targetZoom <= 0) return;
-    setZoom(Math.max(0.5, Math.min(targetZoom, 3)));
+    setZoom(
+      Math.max(PDF_VIEWER_MIN_ZOOM, Math.min(targetZoom, PDF_VIEWER_MAX_ZOOM)),
+    );
   }, []);
 
   return {
@@ -424,6 +531,7 @@ export function useEditPdf() {
     pageAnnotations,
     selectedId,
     selectedAnnotation,
+    editingTextId,
     color,
     strokeWidth,
     fontSize,
@@ -442,12 +550,17 @@ export function useEditPdf() {
     setBold: setBoldWithSelection,
     setItalic: setItalicWithSelection,
     setSelectedId,
+    selectAnnotation,
+    startEditingText,
+    stopEditingText,
     addFile,
     addAnnotation,
     addImageFromFile,
     addSignatureFromDataUrl,
     updateAnnotation,
     removeAnnotation,
+    removeAllOnPage,
+    reorderPageAnnotation,
     removeSelected,
     goToPage,
     zoomIn,

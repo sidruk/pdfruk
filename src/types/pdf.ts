@@ -124,6 +124,8 @@ export type EditAnnotationBase = {
   strokeWidth: number;
 };
 
+export type TextAlign = "left" | "center" | "right";
+
 export type TextAnnotation = EditAnnotationBase & {
   type: "text";
   x: number;
@@ -135,6 +137,10 @@ export type TextAnnotation = EditAnnotationBase & {
   fontFamily: EditFontFamily;
   bold: boolean;
   italic: boolean;
+  underline?: boolean;
+  textAlign?: TextAlign;
+  opacity?: number;
+  backgroundColor?: string | null;
   rotation: number;
 };
 
@@ -298,4 +304,15 @@ export type PdfToImagesWorkerRequest = {
     format: "png" | "jpeg";
     jpegQuality?: number;
   };
+};
+
+export type DeleteReorderOptions = {
+  pageOrder: number[];
+  originalName: string;
+};
+
+export type DeleteReorderWorkerRequest = {
+  type: "delete-reorder";
+  buffer: ArrayBuffer;
+  options: DeleteReorderOptions;
 };

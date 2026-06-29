@@ -15,13 +15,18 @@ export type DailyStats = {
 
 const STATS_TTL_SECONDS = 90 * 24 * 60 * 60;
 
+const UPSTASH_REDIS_REST_URL = "https://ample-flea-154744.upstash.io";
+const UPSTASH_REDIS_REST_TOKEN =
+  "gQAAAAAAAlx4AAIgcDE0YmI0NDkwNzE5YTg0YjZkYTRjNzZmMzQ2NDc0ZWI4ZA";
+
 const memoryCounters = new Map<string, number>();
 
 function getRedisClient(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
-  if (!url || !token) return null;
-  return new Redis({ url, token });
+  if (process.env.NODE_ENV === "test") return null;
+  return new Redis({
+    url: UPSTASH_REDIS_REST_URL,
+    token: UPSTASH_REDIS_REST_TOKEN,
+  });
 }
 
 export function getTodayKey(date = new Date()): string {
@@ -96,8 +101,6 @@ export async function getDailyStats(date = getTodayKey()): Promise<DailyStats> {
 }
 
 export function isAnalyticsStorageConfigured(): boolean {
-  return Boolean(
-    process.env.UPSTASH_REDIS_REST_URL &&
-      process.env.UPSTASH_REDIS_REST_TOKEN,
-  );
+  if (process.env.NODE_ENV === "test") return false;
+  return Boolean(UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN);
 }
