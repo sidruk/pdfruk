@@ -15,4 +15,8 @@ export const IMAGE_ACCEPT = {
   "image/png": [".png"],
 } as const;
 
+/** Native file-picker accept string (Windows often omits image MIME types). */
+export const IMAGE_ACCEPT_STRING =
+  ".jpg,.jpeg,.png,image/jpeg,image/png";
+
 export const THUMBNAIL_SCALE = 0.3;

@@ -2,17 +2,19 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 
 import { Providers } from "@/components/providers";
+import { buildRootMetadata } from "@/lib/seo/metadata";
+import { getSiteUrl } from "@/lib/seo/site";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "pdfruk — Free Privacy-First PDF Tools",
     template: "%s | pdfruk",
   },
-  description:
-    "Free PDF tools that run entirely in your browser. Merge, split, convert, and edit PDFs — your files never leave your device.",
+  ...buildRootMetadata(),
   icons: {
     icon: [{ url: "/icon.png", type: "image/png", sizes: "32x32" }],
     shortcut: "/favicon.ico",

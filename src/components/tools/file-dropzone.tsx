@@ -16,8 +16,20 @@ import {
   DropzoneHint,
   DropzoneSurface,
 } from "@/components/tools/dropzone-content";
-import { PDF_ACCEPT_STRING } from "@/lib/pdf/constants";
+import {
+  IMAGE_ACCEPT_STRING,
+  PDF_ACCEPT_STRING,
+} from "@/lib/pdf/constants";
 import { cn } from "@/lib/utils";
+
+function isImageAccept(accept?: Accept): boolean {
+  if (!accept) return false;
+  return "image/jpeg" in accept || "image/png" in accept;
+}
+
+function getInputAcceptString(accept?: Accept): string {
+  return isImageAccept(accept) ? IMAGE_ACCEPT_STRING : PDF_ACCEPT_STRING;
+}
 
 type FileDropzoneOptions = {
   onFilesAccepted: (files: File[]) => void;
@@ -66,13 +78,15 @@ export function FileDropzoneProvider({
         return;
       }
 
-      const rejectedPdfs = fileRejections
-        .map((rejection) => rejection.file)
-        .filter(isPdfByName);
+      if (!isImageAccept(accept)) {
+        const rejectedPdfs = fileRejections
+          .map((rejection) => rejection.file)
+          .filter(isPdfByName);
 
-      if (rejectedPdfs.length > 0) {
-        onFilesAccepted(rejectedPdfs);
-        return;
+        if (rejectedPdfs.length > 0) {
+          onFilesAccepted(rejectedPdfs);
+          return;
+        }
       }
 
       if (fileRejections.length > 0) {
@@ -81,7 +95,7 @@ export function FileDropzoneProvider({
         toast.error(message);
       }
     },
-    [onFilesAccepted],
+    [accept, onFilesAccepted],
   );
 
   const {
@@ -122,7 +136,7 @@ export function FileDropzoneProvider({
       >
         <input
           {...getInputProps({
-            accept: PDF_ACCEPT_STRING,
+            accept: getInputAcceptString(accept),
           })}
         />
         {isDragActive && !disabled ? (
