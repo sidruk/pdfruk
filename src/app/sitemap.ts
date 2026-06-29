@@ -1,9 +1,13 @@
 import type { MetadataRoute } from "next";
 
 import { getVisibleTools } from "@/config/tools";
+import { isSearchEngineIndexingDiscouraged } from "@/lib/seo/indexing";
 import { getSiteUrl } from "@/lib/seo/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (isSearchEngineIndexingDiscouraged()) {
+    return [];
+  }
   const siteUrl = getSiteUrl();
   const lastModified = new Date();
 

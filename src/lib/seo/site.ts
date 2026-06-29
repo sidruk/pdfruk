@@ -10,6 +10,8 @@ export const SITE_FACEBOOK_URL = "https://www.facebook.com/pdfruk";
 
 export const SITE_PHONE = "+923337586021";
 
+export const SITE_WHATSAPP_URL = "https://wa.me/+923337586021";
+
 /** Canonical site URL. Set NEXT_PUBLIC_SITE_URL in production (e.g. https://pdfruk.com). */
 export function getSiteUrl(): string {
   const url = process.env.NEXT_PUBLIC_SITE_URL?.trim();

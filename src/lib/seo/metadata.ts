@@ -4,6 +4,7 @@ import type { ToolDefinition } from "@/config/tools";
 
 import type { ToolSeoContent } from "./tool-content";
 
+import { getRobotsMetadata } from "./indexing";
 import {
   SITE_DESCRIPTION,
   SITE_FACEBOOK_URL,
@@ -40,18 +41,7 @@ export function buildPageMetadata({
     alternates: {
       canonical: url,
     },
-    robots: noIndex
-      ? { index: false, follow: false }
-      : {
-          index: true,
-          follow: true,
-          googleBot: {
-            index: true,
-            follow: true,
-            "max-image-preview": "large",
-            "max-snippet": -1,
-          },
-        },
+    robots: getRobotsMetadata(noIndex),
     openGraph: {
       type: "website",
       locale: "en_GB",
@@ -87,16 +77,7 @@ export function buildRootMetadata(): Metadata {
     alternates: {
       canonical: url,
     },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
+    robots: getRobotsMetadata(),
     openGraph: {
       type: "website",
       locale: "en_GB",

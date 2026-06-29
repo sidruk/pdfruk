@@ -1,10 +1,13 @@
 import Link from "next/link";
+import { Phone } from "lucide-react";
 
+import { WhatsAppIcon } from "@/components/icons/whatsapp-icon";
 import { Logo } from "@/components/layout/logo";
 import { getVisibleTools } from "@/config/tools";
 import {
   SITE_FACEBOOK_URL,
   SITE_PHONE,
+  SITE_WHATSAPP_URL,
 } from "@/lib/seo/site";
 
 const FOOTER_TOOLS = getVisibleTools().slice(0, 8);
@@ -42,6 +45,8 @@ export function Footer() {
                 <li key={tool.id}>
                   <Link
                     href={tool.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="text-sm text-muted-foreground transition-colors hover:text-brand-red"
                   >
                     {tool.title}
@@ -62,6 +67,8 @@ export function Footer() {
               <li>
                 <Link
                   href="/#tools"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground transition-colors hover:text-brand-red"
                 >
                   All tools
@@ -70,6 +77,8 @@ export function Footer() {
               <li>
                 <Link
                   href="/#faq"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground transition-colors hover:text-brand-red"
                 >
                   FAQ
@@ -78,6 +87,8 @@ export function Footer() {
               <li>
                 <Link
                   href="/merge"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm text-muted-foreground transition-colors hover:text-brand-red"
                 >
                   Merge PDF
@@ -96,20 +107,32 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <a
+                  href={SITE_WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-brand-red"
+                >
+                  <WhatsAppIcon />
+                  WhatsApp
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`tel:${SITE_PHONE}`}
+                  className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-brand-red"
+                >
+                  <Phone className="h-4 w-4 shrink-0" aria-hidden />
+                  {SITE_PHONE}
+                </a>
+              </li>
+              <li>
+                <a
                   href={SITE_FACEBOOK_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm text-muted-foreground transition-colors hover:text-brand-red"
                 >
                   Facebook
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`tel:${SITE_PHONE}`}
-                  className="text-sm text-muted-foreground transition-colors hover:text-brand-red"
-                >
-                  {SITE_PHONE}
                 </a>
               </li>
             </ul>
