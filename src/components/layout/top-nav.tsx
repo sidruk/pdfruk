@@ -229,7 +229,7 @@ export function TopNav() {
       <div className="h-1 bg-brand-charcoal" aria-hidden />
       <div className="relative border-b border-border/80 bg-background">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4 sm:gap-8 sm:px-6">
-          <Logo width={150} height={38} />
+          <Logo size="md" priority />
           <DesktopNav pathname={pathname} />
           <div className="ml-auto flex items-center gap-1">
             <ThemeToggle />

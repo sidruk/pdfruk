@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import { Inter } from "next/font/google";
+import { Suspense } from "react";
 
+import { Ga4PageView } from "@/components/analytics/ga4-page-view";
 import { Providers } from "@/components/providers";
+import { GA_MEASUREMENT_ID } from "@/lib/analytics/ga4";
 import { buildRootMetadata } from "@/lib/seo/metadata";
-import { getSiteUrl } from "@/lib/seo/site";
+import { getSiteUrl, SITE_NAME, SITE_TAGLINE } from "@/lib/seo/site";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -11,8 +15,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export const metadata: Metadata = {
   metadataBase: new URL(getSiteUrl()),
   title: {
-    default: "pdfruk — Free Privacy-First PDF Tools",
-    template: "%s | pdfruk",
+    default: `${SITE_NAME} — ${SITE_TAGLINE}`,
+    template: `%s | ${SITE_NAME}`,
   },
   ...buildRootMetadata(),
   icons: {
@@ -31,7 +35,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-screen font-sans antialiased">
         <Providers>{children}</Providers>
+        <Suspense fallback={null}>
+          <Ga4PageView />
+        </Suspense>
       </body>
+      <GoogleAnalytics gaId={GA_MEASUREMENT_ID} />
     </html>
   );
 }

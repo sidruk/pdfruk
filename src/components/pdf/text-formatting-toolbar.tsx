@@ -188,13 +188,15 @@ export function TextFormattingToolbar({
       >
         <PaintBucket className="h-4 w-4 text-gray-700" />
         <span
-          className="absolute bottom-1 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full"
-          style={{
-            backgroundColor:
-              annotation.backgroundColor === null
-                ? "transparent"
-                : fillColor,
-          }}
+          className={cn(
+            "absolute bottom-1 left-1/2 h-0.5 w-3 -translate-x-1/2 rounded-full",
+            annotation.backgroundColor === null && "bg-transparent",
+          )}
+          style={
+            annotation.backgroundColor === null
+              ? undefined
+              : { backgroundColor: fillColor }
+          }
         />
         <input
           type="color"
@@ -226,11 +228,7 @@ export function TextFormattingToolbar({
       <ToolbarDivider />
 
       <div
-        className="mx-0.5 h-4 w-4 shrink-0 rounded-sm border border-gray-300 bg-[length:4px_4px] bg-[position:0_0,2px_2px] bg-white"
-        style={{
-          backgroundImage:
-            "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)",
-        }}
+        className="checkerboard-swatch mx-0.5 h-4 w-4 shrink-0 rounded-sm border border-gray-300 bg-[length:4px_4px] bg-[position:0_0,2px_2px] bg-white"
         aria-hidden
       />
       <ToolbarSelect

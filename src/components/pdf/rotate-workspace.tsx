@@ -8,6 +8,13 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { PdfFile, RotationAngle } from "@/types/pdf";
 
+const ROTATION_CLASS: Record<RotationAngle, string> = {
+  0: "rotate-0",
+  90: "rotate-90",
+  180: "rotate-180",
+  270: "-rotate-90",
+};
+
 type RotatePageCardProps = {
   pageIndex: number;
   thumbnailUrl?: string;
@@ -54,8 +61,10 @@ function RotatePageCard({
           <img
             src={thumbnailUrl}
             alt={`Page ${pageIndex + 1}`}
-            className="h-full w-full object-contain transition-transform duration-200"
-            style={{ transform: `rotate(${rotation}deg)` }}
+            className={cn(
+              "h-full w-full object-contain transition-transform duration-200",
+              ROTATION_CLASS[rotation],
+            )}
           />
         ) : (
           <div className="flex h-full items-center justify-center text-xs text-muted-foreground">

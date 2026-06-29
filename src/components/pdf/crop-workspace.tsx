@@ -155,17 +155,14 @@ export function CropWorkspace({
             {isPageLoading && !render ? (
               <p className="text-sm text-gray-500">Loading page...</p>
             ) : render ? (
-              <div
-                className="relative shadow-lg"
-                style={{ width: render.width, height: render.height }}
-              >
+              <div className="relative shadow-lg">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={render.dataUrl}
                   alt={`Page ${currentPage + 1}`}
                   width={Math.round(render.width)}
                   height={Math.round(render.height)}
-                  className="block h-full w-full"
+                  className="block max-w-none"
                   draggable={false}
                 />
                 <CropOverlay

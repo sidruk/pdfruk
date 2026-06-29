@@ -24,6 +24,12 @@ const SIGNATURE_COLORS = [
   { id: "red", value: "#dc2626", label: "Red" },
 ] as const;
 
+const SIGNATURE_COLOR_CLASS: Record<string, string> = {
+  "#000000": "bg-black",
+  "#2563eb": "bg-blue-600",
+  "#dc2626": "bg-red-600",
+};
+
 const SIGNATURE_FONT =
   '"Segoe Script", "Brush Script MT", "Lucida Handwriting", cursive';
 
@@ -63,8 +69,10 @@ function ColorPicker({
           )}
         >
           <span
-            className="h-5 w-5 rounded-full border border-black/10"
-            style={{ backgroundColor: color.value }}
+            className={cn(
+              "h-5 w-5 rounded-full border border-black/10",
+              SIGNATURE_COLOR_CLASS[color.value],
+            )}
           />
         </button>
       ))}
@@ -339,8 +347,8 @@ function TypeSignaturePanel({
       />
       <div className="flex min-h-[180px] items-center justify-center rounded-lg border border-gray-200 bg-white px-4">
         <span
-          className="text-5xl"
-          style={{ color, fontFamily: SIGNATURE_FONT }}
+          className="signature-preview-text text-5xl"
+          style={{ color }}
         >
           {text.trim() || "Preview"}
         </span>

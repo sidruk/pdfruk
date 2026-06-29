@@ -8,7 +8,8 @@ const STEPS = [
     step: "01",
     icon: Upload,
     title: "Drop your files",
-    description: "Drag PDFs into the tool or tap to browse from your device.",
+    description:
+      "Drag PDFs into the tool or tap to browse from your device. You can add multiple files at once for merge tasks or a single file for split and edit workflows.",
     visual: (
       <div className="relative mx-auto h-28 w-full max-w-[180px]">
         <div className="absolute inset-x-0 bottom-0 rounded-xl border-2 border-dashed border-brand-red/30 bg-brand-red/5 p-4">
@@ -44,7 +45,7 @@ const STEPS = [
     icon: MousePointerClick,
     title: "Choose an action",
     description:
-      "Merge, split, rotate, or convert — all processing stays on your device.",
+      "Merge, split, rotate, convert, or edit your document — choose the tool that fits your task. All browser-based processing stays on your device for maximum privacy.",
     visual: (
       <div className="relative mx-auto flex h-28 w-full max-w-[180px] flex-col items-center justify-center gap-2">
         <div className="flex gap-2">
@@ -76,7 +77,7 @@ const STEPS = [
     icon: Download,
     title: "Download instantly",
     description:
-      "Get your finished PDF in seconds. No email, no sign-up required.",
+      "Get your finished PDF in seconds. Download directly to your device with no email, no sign-up, and no watermarks added to your file.",
     visual: (
       <div className="relative mx-auto flex h-28 w-full max-w-[180px] flex-col items-center justify-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-red/10 ring-4 ring-brand-red/5">

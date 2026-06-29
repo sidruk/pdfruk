@@ -2,6 +2,7 @@ import { Features } from "@/components/landing/features";
 import { Faq } from "@/components/landing/faq";
 import { Hero } from "@/components/landing/hero";
 import { HowItWorks } from "@/components/landing/how-it-works";
+import { PdfGuide } from "@/components/landing/pdf-guide";
 import { PopularTools } from "@/components/landing/popular-tools";
 import { ToolCardGrid } from "@/components/landing/tool-card-grid";
 import { JsonLd } from "@/lib/seo/json-ld";
@@ -27,6 +28,7 @@ export default function HomePage() {
       <PopularTools />
       <HowItWorks />
       <ToolCardGrid />
+      <PdfGuide />
       <Faq />
     </>
   );

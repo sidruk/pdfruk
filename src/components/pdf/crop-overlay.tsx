@@ -33,8 +33,6 @@ type DragState = {
   startRect: CropRect;
 };
 
-const HANDLE_SIZE = 10;
-
 function toNormalizedPoint(
   clientX: number,
   clientY: number,
@@ -275,10 +273,9 @@ export function CropOverlay({
                   type="button"
                   aria-label={handle.label}
                   className={cn(
-                    "absolute z-10 rounded-full border-2 border-white bg-blue-500 shadow-sm",
+                    "absolute z-10 h-2.5 w-2.5 rounded-full border-2 border-white bg-blue-500 shadow-sm",
                     handle.className,
                   )}
-                  style={{ width: HANDLE_SIZE, height: HANDLE_SIZE }}
                   onPointerDown={(event) => handlePointerDown(event, handle.mode)}
                 />
               ))

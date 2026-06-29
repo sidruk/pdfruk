@@ -122,7 +122,7 @@ function ToolCard({
           ) : isLive ? (
             <span className="inline-flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              Available now
+              Live
             </span>
           ) : (
             "In development"

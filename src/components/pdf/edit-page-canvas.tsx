@@ -317,16 +317,16 @@ const RESIZE_HANDLES: Array<{
   handle: ResizeHandle;
   x: (width: number) => number;
   y: (height: number) => number;
-  cursor: string;
+  cursorClass: string;
 }> = [
-  { handle: "nw", x: () => 0, y: () => 0, cursor: "nwse-resize" },
-  { handle: "n", x: (width) => width / 2, y: () => 0, cursor: "ns-resize" },
-  { handle: "ne", x: (width) => width, y: () => 0, cursor: "nesw-resize" },
-  { handle: "e", x: (width) => width, y: (height) => height / 2, cursor: "ew-resize" },
-  { handle: "se", x: (width) => width, y: (height) => height, cursor: "nwse-resize" },
-  { handle: "s", x: (width) => width / 2, y: (height) => height, cursor: "ns-resize" },
-  { handle: "sw", x: () => 0, y: (height) => height, cursor: "nesw-resize" },
-  { handle: "w", x: () => 0, y: (height) => height / 2, cursor: "ew-resize" },
+  { handle: "nw", x: () => 0, y: () => 0, cursorClass: "cursor-nwse-resize" },
+  { handle: "n", x: (width) => width / 2, y: () => 0, cursorClass: "cursor-ns-resize" },
+  { handle: "ne", x: (width) => width, y: () => 0, cursorClass: "cursor-nesw-resize" },
+  { handle: "e", x: (width) => width, y: (height) => height / 2, cursorClass: "cursor-ew-resize" },
+  { handle: "se", x: (width) => width, y: (height) => height, cursorClass: "cursor-nwse-resize" },
+  { handle: "s", x: (width) => width / 2, y: (height) => height, cursorClass: "cursor-ns-resize" },
+  { handle: "sw", x: () => 0, y: (height) => height, cursorClass: "cursor-nesw-resize" },
+  { handle: "w", x: () => 0, y: (height) => height / 2, cursorClass: "cursor-ew-resize" },
 ];
 
 function textFontStyles(annotation: TextAnnotation) {
@@ -424,7 +424,7 @@ function TextBoxHandles({
 
   return (
     <>
-      {RESIZE_HANDLES.map(({ handle, x, y, cursor }) => {
+      {RESIZE_HANDLES.map(({ handle, x, y, cursorClass }) => {
         const handleX = x(width);
         const handleY = y(height);
         return (
@@ -437,7 +437,7 @@ function TextBoxHandles({
             fill={TEXT_SELECTION_COLOR}
             stroke="white"
             strokeWidth={0.75}
-            style={{ cursor }}
+            className={cursorClass}
             onPointerDown={(event) => {
               event.stopPropagation();
               event.preventDefault();
@@ -487,12 +487,10 @@ function PlacedItemChrome({
         stroke={showHandles ? color : "transparent"}
         strokeWidth={showHandles ? 1 : 0}
         strokeDasharray={showHandles ? "4 2" : undefined}
+        className={cn(showHandles && !editing && "cursor-move")}
         onMouseDown={(event) => {
           if (!showHandles || editing) return;
           onMoveStart(event);
-        }}
-        style={{
-          cursor: showHandles && !editing ? "move" : undefined,
         }}
       />
 
@@ -510,9 +508,9 @@ function PlacedItemChrome({
               />
               <g
                 transform={`translate(${width / 2}, ${-ROTATE_HANDLE_OFFSET})`}
-                style={{
-                  cursor: interaction?.kind === "rotate" ? "grabbing" : "grab",
-                }}
+                className={cn(
+                  interaction?.kind === "rotate" ? "cursor-grabbing" : "cursor-grab",
+                )}
                 onMouseDown={onRotateStart}
               >
                 <circle
@@ -546,9 +544,9 @@ function PlacedItemChrome({
             stroke={color}
             strokeWidth={0.5}
             strokeOpacity={0.35}
-            style={{
-              cursor: interaction?.kind === "move" ? "grabbing" : "move",
-            }}
+            className={cn(
+              interaction?.kind === "move" ? "cursor-grabbing" : "cursor-move",
+            )}
             onMouseDown={onMoveStart}
           />
           <g
@@ -564,7 +562,7 @@ function PlacedItemChrome({
           </g>
 
           {resizable && onResizeStart
-            ? RESIZE_HANDLES.map(({ handle, x, y, cursor }) => {
+            ? RESIZE_HANDLES.map(({ handle, x, y, cursorClass }) => {
                 const handleX = x(width);
                 const handleY = y(height);
                 return (
@@ -577,7 +575,7 @@ function PlacedItemChrome({
                     fill="white"
                     stroke={color}
                     strokeWidth={1.25}
-                    style={{ cursor }}
+                    className={cursorClass}
                     onMouseDown={(event) => {
                       event.stopPropagation();
                       onResizeStart(event, handle);
@@ -988,7 +986,7 @@ function TextAnnotationView({
                   ? "end"
                   : "start"
             }
-            style={{ userSelect: "none", pointerEvents: "none" }}
+            className="select-none pointer-events-none"
           >
             {annotation.text}
           </text>
@@ -998,9 +996,9 @@ function TextAnnotationView({
             width={width}
             height={height}
             fill="transparent"
-            style={{
-              cursor: interaction?.kind === "move" ? "grabbing" : "grab",
-            }}
+            className={cn(
+              interaction?.kind === "move" ? "cursor-grabbing" : "cursor-grab",
+            )}
             onPointerDown={handleMoveStart}
             onDoubleClick={(event) => {
               event.stopPropagation();
@@ -1090,8 +1088,8 @@ function ImageAnnotationView({
         width={width}
         height={Math.max(contentHeight, 1)}
         preserveAspectRatio="xMidYMid meet"
+        className={cn(showHandles && "cursor-move")}
         onMouseDown={startMove}
-        style={{ cursor: showHandles ? "move" : undefined }}
       />
     </g>
   );
@@ -1282,10 +1280,10 @@ function ShapePreview({
   const hitStrokeWidth = interactive ? Math.max(sw, 12) : sw;
   const pointerProps = interactive
     ? ({
-        style: {
-          pointerEvents: "stroke" as const,
-          cursor: onMoveStart ? "move" : "pointer",
-        },
+        className: cn(
+          "pointer-events-stroke",
+          onMoveStart ? "cursor-move" : "cursor-pointer",
+        ),
         onMouseDown: onMoveStart,
       } as const)
     : {};
@@ -1328,7 +1326,10 @@ function ShapePreview({
               y2={y2}
               stroke="transparent"
               strokeWidth={hitStrokeWidth}
-              style={{ pointerEvents: "stroke", cursor: onMoveStart ? "move" : "pointer" }}
+              className={cn(
+                "pointer-events-stroke",
+                onMoveStart ? "cursor-move" : "cursor-pointer",
+              )}
               onMouseDown={onMoveStart}
             />
           ) : null}
@@ -1339,7 +1340,7 @@ function ShapePreview({
             y2={y2}
             stroke={stroke}
             strokeWidth={sw}
-            style={interactive ? { pointerEvents: "none" } : undefined}
+            className={cn(interactive && "pointer-events-none")}
           />
         </>
       );

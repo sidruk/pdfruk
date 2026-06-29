@@ -533,10 +533,7 @@ export function EditWorkspace({
                 {isPageLoading && !render ? (
                   <p className="text-sm text-gray-500">Loading page...</p>
                 ) : render ? (
-                  <div
-                    className="relative isolate overflow-hidden shadow-lg"
-                    style={{ width: render.width, height: render.height }}
-                  >
+                  <div className="relative isolate overflow-hidden shadow-lg">
                     {selectedText ? (
                       <div className="pointer-events-none absolute inset-x-0 top-2 z-30 flex justify-center px-2">
                         <TextFormattingToolbar
@@ -558,7 +555,7 @@ export function EditWorkspace({
                       alt={`Page ${currentPage + 1}`}
                       width={Math.round(render.width)}
                       height={Math.round(render.height)}
-                      className="block h-full w-full"
+                      className="block max-w-none"
                       draggable={false}
                     />
                     <EditPageCanvas

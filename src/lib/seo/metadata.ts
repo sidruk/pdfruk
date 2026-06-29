@@ -4,7 +4,9 @@ import type { ToolDefinition } from "@/config/tools";
 
 import {
   SITE_DESCRIPTION,
+  SITE_FACEBOOK_URL,
   SITE_NAME,
+  SITE_PHONE,
   SITE_TAGLINE,
   getSiteUrl,
 } from "./site";
@@ -146,6 +148,13 @@ export function buildOrganizationJsonLd() {
     url: siteUrl,
     logo: absoluteUrl("/icon.png"),
     description: SITE_DESCRIPTION,
+    sameAs: [SITE_FACEBOOK_URL],
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: SITE_PHONE,
+      contactType: "customer service",
+      availableLanguage: ["English"],
+    },
   };
 }
 

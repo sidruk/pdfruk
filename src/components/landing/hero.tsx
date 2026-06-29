@@ -31,9 +31,9 @@ export function Hero() {
           <PrivacyBadge />
           <div className="space-y-4">
             <h1 className="text-4xl font-bold leading-[1.1] tracking-tight text-brand-charcoal dark:text-foreground sm:text-5xl lg:text-[3.25rem]">
-              Free PDF tools that{" "}
+              Merge, split & edit PDFs with{" "}
               <span className="bg-gradient-to-r from-brand-red to-brand-red-hover bg-clip-text text-transparent">
-                respect your privacy
+                free privacy-first tools
               </span>
             </h1>
             <p className="max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -60,7 +60,7 @@ export function Hero() {
                 "inline-flex h-11 items-center justify-center px-6",
               )}
             >
-              Merge PDF now
+              Merge PDF
             </Link>
           </div>
 

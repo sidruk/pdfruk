@@ -7,7 +7,7 @@ const FEATURES = [
     icon: ShieldCheck,
     title: "Privacy first",
     description:
-      "Files are processed locally in your browser. Nothing is uploaded to our servers.",
+      "Files are processed locally in your browser for merge, split, edit, and convert tasks. Sensitive documents never need to leave your device.",
     accent: "from-brand-red/20 to-brand-red/5",
     iconColor: "text-brand-red",
     glow: "bg-brand-red/20",
@@ -16,7 +16,7 @@ const FEATURES = [
     icon: Zap,
     title: "Instant results",
     description:
-      "No queues or waiting. Merge, split, and edit PDFs as soon as you drop your files.",
+      "No queues or waiting rooms. Merge, split, edit, and convert PDFs as soon as you drop your files — results are ready in seconds on modern devices.",
     accent: "from-amber-500/20 to-amber-500/5",
     iconColor: "text-amber-600 dark:text-amber-400",
     glow: "bg-amber-500/20",
@@ -25,7 +25,7 @@ const FEATURES = [
     icon: Globe,
     title: "Works everywhere",
     description:
-      "Use pdfruk on desktop, tablet, or phone. No install, no account, completely free.",
+      "Use pdfruk on desktop, tablet, or phone with Chrome, Firefox, Safari, or Edge. No install, no account, and every PDF tool is completely free.",
     accent: "from-sky-500/20 to-sky-500/5",
     iconColor: "text-sky-600 dark:text-sky-400",
     glow: "bg-sky-500/20",

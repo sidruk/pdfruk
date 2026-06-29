@@ -36,14 +36,7 @@ export function LandingBg({
             <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-border/80 to-transparent" />
           </>
         ) : null}
-        <div
-          className="absolute inset-0 opacity-[0.35] dark:opacity-[0.15]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, var(--border) 1px, transparent 0)",
-            backgroundSize: "24px 24px",
-          }}
-        />
+        <div className="landing-dot-grid absolute inset-0 opacity-[0.35] dark:opacity-[0.15]" />
       </div>
       {children}
     </div>

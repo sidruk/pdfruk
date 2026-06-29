@@ -1,9 +1,14 @@
 export const SITE_NAME = "pdfruk";
 
-export const SITE_TAGLINE = "Free Privacy-First PDF Tools";
+export const SITE_TAGLINE =
+  "Free Privacy-First Merge, Split & Edit PDF Tools";
 
 export const SITE_DESCRIPTION =
-  "Free PDF tools that run entirely in your browser. Merge, split, convert, edit, and sign PDFs — your files never leave your device.";
+  "Free PDF tools to merge, split, convert, and edit files in your browser. Privacy-first — your documents never leave your device.";
+
+export const SITE_FACEBOOK_URL = "https://www.facebook.com/pdfruk";
+
+export const SITE_PHONE = "+923337586021";
 
 /** Canonical site URL. Set NEXT_PUBLIC_SITE_URL in production (e.g. https://pdfruk.com). */
 export function getSiteUrl(): string {

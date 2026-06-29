@@ -1,4 +1,5 @@
 import type { TrackableToolId } from "@/lib/analytics/constants";
+import { trackGa4Event } from "@/lib/analytics/ga4";
 
 type AnalyticsEvent =
   | { type: "tool_complete"; tool: TrackableToolId }
@@ -25,6 +26,7 @@ function sendEvent(event: AnalyticsEvent): void {
 
 export function trackToolComplete(tool: TrackableToolId): void {
   sendEvent({ type: "tool_complete", tool });
+  trackGa4Event("tool_complete", { tool_name: tool });
 }
 
 export function trackPageView(): void {
