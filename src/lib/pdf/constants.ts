@@ -6,9 +6,9 @@ export const PDF_ACCEPT = {
   "application/octet-stream": [".pdf"],
 } as const;
 
-/** Native file-picker accept string (Windows often omits PDF MIME types). */
+/** Native file-picker accept string — omit application/octet-stream so the dialog filters to PDFs only. */
 export const PDF_ACCEPT_STRING =
-  ".pdf,application/pdf,application/x-pdf,application/octet-stream";
+  ".pdf,application/pdf,application/x-pdf";
 
 export const IMAGE_ACCEPT = {
   "image/jpeg": [".jpg", ".jpeg"],

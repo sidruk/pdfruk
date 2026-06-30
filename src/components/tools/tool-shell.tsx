@@ -97,6 +97,8 @@ export function ToolShell({
 
       {showProcessButton ? (
         <div className="flex flex-col gap-4">
+          {result ? <DownloadResult result={result} onReset={onReset} /> : null}
+
           <ProcessButton
             onProcess={onProcess}
             disabled={!canProcess}
@@ -105,8 +107,6 @@ export function ToolShell({
           />
 
           {progress && isProcessing ? <ProgressBar progress={progress} /> : null}
-
-          {result ? <DownloadResult result={result} onReset={onReset} /> : null}
         </div>
       ) : null}
     </FileDropzoneProvider>
