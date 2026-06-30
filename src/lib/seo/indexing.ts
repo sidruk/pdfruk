@@ -1,5 +1,24 @@
 import type { Metadata } from "next";
 
+/** Meta, X, and LinkedIn crawlers that fetch Open Graph previews. */
+export const SOCIAL_PREVIEW_CRAWLER_USER_AGENTS = [
+  "facebookexternalhit",
+  "Facebot",
+  "meta-externalagent",
+  "meta-externalfetcher",
+  "Twitterbot",
+  "LinkedInBot",
+] as const;
+
+export function isSocialPreviewCrawler(userAgent: string | null): boolean {
+  if (!userAgent) return false;
+
+  const normalized = userAgent.toLowerCase();
+  return SOCIAL_PREVIEW_CRAWLER_USER_AGENTS.some((crawler) =>
+    normalized.includes(crawler.toLowerCase()),
+  );
+}
+
 /**
  * Indexing is allowed in production by default.
  * Set SEARCH_ENGINE_INDEXING=discourage to block crawlers (e.g. staging).
