@@ -25,7 +25,7 @@ export function ComingSoon({ tool }: ComingSoonProps) {
           </h1>
           <Badge variant="secondary" className="gap-1">
             <Clock className="h-3 w-3" aria-hidden />
-            Coming soon
+            Under construction
           </Badge>
         </div>
         <p className="text-muted-foreground">{tool.description}</p>

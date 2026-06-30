@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getVisibleTools } from "@/config/tools";
+import { getLiveTools } from "@/config/tools";
 import { getAllBlogPosts, getBlogPostPath } from "@/lib/content/blog-posts";
 import { isSearchEngineIndexingDiscouraged } from "@/lib/seo/indexing";
 import { ALL_STATIC_PAGES } from "@/lib/seo/static-pages";
@@ -13,7 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
   const lastModified = new Date();
 
-  const toolEntries = getVisibleTools().map((tool) => ({
+  const toolEntries = getLiveTools().map((tool) => ({
     url: `${siteUrl}${tool.href}`,
     lastModified,
     changeFrequency: "monthly" as const,

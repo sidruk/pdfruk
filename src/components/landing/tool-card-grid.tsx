@@ -83,7 +83,9 @@ function ToolCard({
             <Icon className="h-5 w-5" aria-hidden />
           </div>
           <div className="flex items-center gap-2">
-            {!isLive ? <Badge variant="secondary">Coming soon</Badge> : null}
+            {!isLive ? (
+              <Badge variant="secondary">Under construction</Badge>
+            ) : null}
             <div
               className={cn(
                 "flex h-7 w-7 items-center justify-center rounded-full border border-border/60 bg-background/80 transition-all duration-300",
@@ -125,7 +127,7 @@ function ToolCard({
               Live
             </span>
           ) : (
-            "In development"
+            "Under construction"
           )}
         </p>
       </article>

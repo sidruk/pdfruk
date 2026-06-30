@@ -2,6 +2,8 @@ import {
   Combine,
   Crop,
   FileImage,
+  FileInput,
+  FileType2,
   FormInput,
   Hash,
   Image,
@@ -11,6 +13,7 @@ import {
   PenLine,
   RotateCw,
   Scissors,
+  ScanText,
   Shuffle,
   Signature,
   Stamp,
@@ -61,21 +64,15 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Safe Combine PDF Without Uploading — Private & Free",
+      title: "Safe PDF Merge — Combine Without Uploading, Private & Free | pdfruk",
       description:
-        "Combine PDF files in your browser without uploading to a server. Drag to reorder, merge locally, download free — files stay on your device. No signup.",
+      "Safely merge PDF files in your browser — no upload, no signup. Combine and reorder locally so your files never leave your device. Free, private, secure.",
       keywords: [
+        "safe merge pdf",
         "merge pdf without uploading",
-        "combine pdf offline",
-        "safe combine pdf privately",
-        "safe combine pdf",
-        "merge pdf online secure",  
-        "safe combine pdf on iphone",
         "private pdf merger",
-        "secure combine pdf",
-        "combine pdf in browser",
-        "safe combine pdf files stay on device",
-        "merge pdf files stay on device",
+        "secure pdf merger",
+        "merge pdf in browser",
       ],
     },
   },
@@ -88,16 +85,15 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Split PDF Online — Extract Pages Free",
+      title: "Split PDF Safely — Extract Pages Without Uploading | pdfruk",
       description:
-        "Split a PDF into separate files by page range or selection. Free, fast, and private — all processing happens locally in your browser.",
+        "Split a PDF into separate files by page range or selection — no upload, no signup. All processing happens locally so your files never leave your device. Free.",
       keywords: [
-        "split pdf",
+        "split pdf without uploading",
         "extract pdf pages",
-        "pdf splitter",
+        "private pdf splitter",
+        "split pdf in browser",
         "separate pdf pages",
-        "pdf split documents",
-        "split pdf online free",
       ],
     },
   },
@@ -110,18 +106,15 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Rotate PDF Online — Turn PDF Pages Free",
+      title: "Rotate PDF Safely — Turn PDF Pages Without Uploading | pdfruk",
       description:
         "Rotate PDF pages 90°, 180°, or 270° individually or all at once. Free online tool with no file uploads — your PDF stays on your device.",
       keywords: [
         "rotate pdf",
-        "rotate pdf free",
-        "rotate pdf online free",
-        "edit pdf online free rotate",
-        "rotate pdf pages free online",
-        "rotate pdf pages free",
+        "rotate pdf pages",
+        "rotate pdf without uploading",
         "turn pdf pages",
-        "pdf rotation",
+        "private pdf rotator",
       ],
     },
   },
@@ -134,9 +127,9 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Delete & Reorder PDF Pages Online Free",
+      title: "Delete & Reorder PDF Pages — No Upload Needed | pdfruk",
       description:
-        "Remove unwanted PDF pages and drag to reorder the rest. Organize your document in seconds — free, private, and browser-based.",
+        "Remove unwanted PDF pages and drag to reorder the rest — no upload, no signup. Organize your document in seconds, all in your browser. Free and private.",
       keywords: [
         "delete pdf pages",
         "reorder pdf pages",
@@ -316,9 +309,8 @@ export const TOOLS: ToolDefinition[] = [
     href: "/compress",
     icon: Minimize2,
     category: "Edit",
-    status: "live",
+    status: "coming-soon",
     requiresServer: true,
-    hidden: true,
     seo: {
       title: "Compress PDF Online — Reduce PDF File Size Free",
       description:
@@ -329,6 +321,51 @@ export const TOOLS: ToolDefinition[] = [
         "pdf compressor",
         "shrink pdf file",
       ],
+    },
+  },
+  {
+    id: "ocr",
+    title: "OCR PDF",
+    description: "Extract searchable text from scanned PDF pages.",
+    href: "/ocr",
+    icon: ScanText,
+    category: "Convert",
+    status: "coming-soon",
+    seo: {
+      title: "OCR PDF Online — Extract Text from Scanned PDFs",
+      description:
+        "Turn scanned PDF pages into searchable text with OCR. Coming soon to pdfruk.",
+      keywords: ["ocr pdf", "pdf text recognition", "scanned pdf to text"],
+    },
+  },
+  {
+    id: "pdf-to-word",
+    title: "PDF to Word",
+    description: "Convert PDF documents to editable Word files.",
+    href: "/pdf-to-word",
+    icon: FileType2,
+    category: "Convert",
+    status: "coming-soon",
+    seo: {
+      title: "PDF to Word Converter Online Free",
+      description:
+        "Convert PDF files to editable Word documents. Coming soon to pdfruk.",
+      keywords: ["pdf to word", "pdf to docx", "convert pdf to word"],
+    },
+  },
+  {
+    id: "word-to-pdf",
+    title: "Word to PDF",
+    description: "Convert Word documents to PDF format.",
+    href: "/word-to-pdf",
+    icon: FileInput,
+    category: "Convert",
+    status: "coming-soon",
+    seo: {
+      title: "Word to PDF Converter Online Free",
+      description:
+        "Convert Word documents to PDF files. Coming soon to pdfruk.",
+      keywords: ["word to pdf", "docx to pdf", "convert word to pdf"],
     },
   },
   {
@@ -379,6 +416,10 @@ export function isToolVisible(tool: ToolDefinition): boolean {
 
 export function getVisibleTools(): ToolDefinition[] {
   return TOOLS.filter(isToolVisible);
+}
+
+export function getLiveTools(): ToolDefinition[] {
+  return getVisibleTools().filter((tool) => tool.status === "live");
 }
 
 export function getToolsByCategory(category: ToolCategory): ToolDefinition[] {

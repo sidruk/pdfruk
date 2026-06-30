@@ -1,0 +1,6 @@
+import { createToolRoute } from "@/lib/seo/tool-route";
+
+const { metadata, ToolRouteLayout } = createToolRoute("/word-to-pdf");
+
+export { metadata };
+export default ToolRouteLayout;

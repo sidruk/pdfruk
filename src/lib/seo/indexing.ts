@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 
-/** Default is discourage until SEARCH_ENGINE_INDEXING=allow is set. */
+/**
+ * Indexing is allowed in production by default.
+ * Set SEARCH_ENGINE_INDEXING=discourage to block crawlers (e.g. staging).
+ */
 export function isSearchEngineIndexingDiscouraged(): boolean {
-  return (
-    process.env.SEARCH_ENGINE_INDEXING?.trim().toLowerCase() !== "allow"
-  );
+  if (process.env.NODE_ENV === "development") return true;
+  if (process.env.VERCEL_ENV === "preview") return true;
+
+  const flag = process.env.SEARCH_ENGINE_INDEXING?.trim().toLowerCase();
+  return flag === "discourage" || flag === "block" || flag === "no";
 }
 
 export const DISCOURAGED_ROBOTS: NonNullable<Metadata["robots"]> = {

@@ -1,11 +1,13 @@
 import type { ComponentType } from "react";
 
 import { FreePdfToolsNoWatermarksContent } from "@/components/blog/posts/free-pdf-tools-no-watermarks";
+import { IsItSafeToMergePdfOnlineContent } from "@/components/blog/posts/is-it-safe-to-merge-pdf-online";
 import { MergePdfWithoutUploadingContent } from "@/components/blog/posts/merge-pdf-without-uploading";
 import { WhyBrowserPdfToolsAreSaferContent } from "@/components/blog/posts/why-browser-pdf-tools-are-safer";
 import type { BlogPostMeta } from "@/lib/content/blog-posts";
 
 const BLOG_POST_BODIES: Record<string, ComponentType> = {
+  "is-it-safe-to-merge-pdf-online": IsItSafeToMergePdfOnlineContent,
   "why-browser-pdf-tools-are-safer": WhyBrowserPdfToolsAreSaferContent,
   "merge-pdf-without-uploading": MergePdfWithoutUploadingContent,
   "free-pdf-tools-no-watermarks": FreePdfToolsNoWatermarksContent,

@@ -12,14 +12,16 @@ export const SITE_PHONE = "+923337586021";
 
 export const SITE_WHATSAPP_URL = "https://wa.me/+923337586021";
 
-export const SITE_CONTACT_EMAIL = "contact@pdfruk.com";
+export const SITE_CONTACT_EMAIL = "sadaquatruk@gmail.com";
 
-/** Canonical site URL. Set NEXT_PUBLIC_SITE_URL in production (e.g. https://pdfruk.com). */
+export const SITE_URL = "https://www.pdfruk.com";
+
+/** Canonical site URL. Override with NEXT_PUBLIC_SITE_URL when needed. */
 export function getSiteUrl(): string {
-  const url = process.env.NEXT_PUBLIC_SITE_URL?.trim();
-  if (url) return url.replace(/\/$/, "");
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL.replace(/\/$/, "")}`;
+  const override = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (override) return override.replace(/\/$/, "");
+  if (process.env.NODE_ENV === "development") {
+    return "http://localhost:3000";
   }
-  return "http://localhost:3000";
+  return SITE_URL;
 }

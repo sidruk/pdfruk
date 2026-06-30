@@ -23,6 +23,53 @@ export function getBlogPostPath(slug: string): string {
 
 export const BLOG_POSTS: BlogPostMeta[] = [
   {
+    slug: "is-it-safe-to-merge-pdf-online",
+    title: "Is It Safe to Merge PDFs Online? What Happens to Your Files",
+    metaTitle: "Is It Safe to Merge PDFs Online? What Happens to Your Files",
+    excerpt:
+      "Most online PDF mergers upload your files to a server. Learn the difference between server-side and browser-based merging — and how to combine PDFs without your files ever leaving your device.",
+    datePublished: "2026-06-30",
+    dateModified: "2026-06-30",
+    keywords: [
+      "is it safe to merge pdf online",
+      "merge pdf online safe",
+      "merge pdf without uploading",
+      "browser based pdf merge",
+      "private pdf merge",
+      "client side pdf merge",
+    ],
+    sitemapPriority: 0.76,
+    icon: Shield,
+    faqs: [
+      {
+        question:
+          "Is it safe to merge bank statements or medical records online?",
+        answer:
+          "Only with a tool that processes files in your browser. Avoid any merger that uploads to a server for documents like these — use a client-side tool so the file never leaves your device.",
+      },
+      {
+        question: "Do free online PDF mergers steal your data?",
+        answer:
+          "Most reputable ones don't, but free plus uploads your file means you're trusting their policies. A browser-based tool sidesteps the question because there's nothing to steal in transit — the file is never sent.",
+      },
+      {
+        question: "Can I merge PDFs completely offline?",
+        answer:
+          "Yes. A true client-side tool keeps working after the page has loaded even with your internet disconnected, because all the processing happens on your own device.",
+      },
+      {
+        question: "How do I know a tool isn't uploading my PDF?",
+        answer:
+          "Disconnect your internet after the page loads and try to merge — if it works, it's local. Or open your browser's Network tab and confirm no request carries your file's data out.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/merge", label: "Merge PDF tool" },
+      { href: "/security", label: "Security" },
+      { href: "/blog/merge-pdf-without-uploading", label: "Merge without uploading" },
+    ],
+  },
+  {
     slug: "why-browser-pdf-tools-are-safer",
     title: "Why browser-based PDF tools are safer for confidential documents",
     metaTitle:

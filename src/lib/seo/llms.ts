@@ -24,7 +24,7 @@ function formatToolList(siteUrl: string, category: ToolCategory): string {
       const note =
         tool.status === "live"
           ? tool.description
-          : `${tool.description} (coming soon)`;
+          : `${tool.description} (under construction)`;
       return `- [${tool.title}](${url}): ${note}`;
     })
     .join("\n");

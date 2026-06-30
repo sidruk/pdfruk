@@ -1,5 +1,12 @@
-const discourageSearchEngineIndexing =
-  process.env.SEARCH_ENGINE_INDEXING?.trim().toLowerCase() !== "allow";
+function isSearchEngineIndexingDiscouraged() {
+  if (process.env.NODE_ENV === "development") return true;
+  if (process.env.VERCEL_ENV === "preview") return true;
+
+  const flag = process.env.SEARCH_ENGINE_INDEXING?.trim().toLowerCase();
+  return flag === "discourage" || flag === "block" || flag === "no";
+}
+
+const discourageSearchEngineIndexing = isSearchEngineIndexingDiscouraged();
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {

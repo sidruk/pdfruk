@@ -128,6 +128,7 @@ export function buildToolMetadata(tool: ToolDefinition): Metadata {
     description: tool.seo.description,
     path: tool.href,
     keywords: tool.seo.keywords,
+    noIndex: tool.status !== "live",
   });
 }
 
