@@ -64,7 +64,7 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Safe PDF Merge — Combine Without Uploading, Private & Free | pdfruk",
+      title: "Safe PDF Merge — Combine Without Uploading, Private & Free",
       description:
       "Safely merge PDF files in your browser — no upload, no signup. Combine and reorder locally so your files never leave your device. Free, private, secure.",
       keywords: [
@@ -85,7 +85,7 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Split PDF Safely — Extract Pages Without Uploading | pdfruk",
+      title: "Split PDF Safely — Extract Pages Without Uploading",
       description:
         "Split a PDF into separate files by page range or selection — no upload, no signup. All processing happens locally so your files never leave your device. Free.",
       keywords: [
@@ -106,7 +106,7 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Rotate PDF Safely — Turn PDF Pages Without Uploading | pdfruk",
+      title: "Rotate PDF Safely — Turn PDF Pages Without Uploading",
       description:
         "Rotate PDF pages 90°, 180°, or 270° individually or all at once. Free online tool with no file uploads — your PDF stays on your device.",
       keywords: [
@@ -127,7 +127,7 @@ export const TOOLS: ToolDefinition[] = [
     category: "Organize",
     status: "live",
     seo: {
-      title: "Delete & Reorder PDF Pages — No Upload Needed | pdfruk",
+      title: "Delete & Reorder PDF Pages — No Upload Needed",
       description:
         "Remove unwanted PDF pages and drag to reorder the rest — no upload, no signup. Organize your document in seconds, all in your browser. Free and private.",
       keywords: [
