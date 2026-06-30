@@ -108,7 +108,6 @@ export default async function OpenGraphImage() {
               borderRadius: 999,
               border: `1px solid rgba(214, 26, 26, 0.2)`,
               background: "rgba(214, 26, 26, 0.05)",
-              width: "fit-content",
             }}
           >
             <div
@@ -130,8 +129,10 @@ export default async function OpenGraphImage() {
             </span>
           </div>
 
-          <p
+          <div
             style={{
+              display: "flex",
+              flexWrap: "wrap",
               fontSize: 46,
               fontWeight: 700,
               lineHeight: 1.15,
@@ -141,12 +142,13 @@ export default async function OpenGraphImage() {
               maxWidth: 620,
             }}
           >
-            Free PDF tools that respect your{" "}
+            <span>Free PDF tools that respect your </span>
             <span style={{ color: BRAND_RED }}>privacy</span>
-          </p>
+          </div>
 
-          <p
+          <div
             style={{
+              display: "flex",
               fontSize: 22,
               lineHeight: 1.45,
               color: MUTED,
@@ -155,7 +157,7 @@ export default async function OpenGraphImage() {
             }}
           >
             Merge, split, convert & edit — 100% in your browser.
-          </p>
+          </div>
 
           <div
             style={{
@@ -198,6 +200,8 @@ export default async function OpenGraphImage() {
         >
           <div
             style={{
+              display: "flex",
+              flexDirection: "column",
               position: "absolute",
               right: 20,
               top: 90,
@@ -275,6 +279,8 @@ export default async function OpenGraphImage() {
 
           <div
             style={{
+              display: "flex",
+              flexDirection: "column",
               position: "absolute",
               left: 0,
               top: 150,
