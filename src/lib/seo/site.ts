@@ -1,4 +1,4 @@
-export const SITE_NAME = "pdfruk";
+export const SITE_NAME = "PDFRuk";
 
 export const SITE_TAGLINE =
   "Free Privacy-First Merge, Split & Edit PDF Tools";
