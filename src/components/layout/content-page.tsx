@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 
 import type { StaticPageLink } from "@/lib/seo/static-pages";
@@ -14,10 +15,14 @@ type ContentPageProps = {
   description?: string;
   lastUpdated?: string;
   publishedDate?: string;
+  coverImage?: string;
+  coverImageAlt?: string;
   breadcrumbs?: BreadcrumbItem[];
   relatedLinks?: StaticPageLink[];
   children: React.ReactNode;
   className?: string;
+  wide?: boolean;
+  unstyledContent?: boolean;
 };
 
 export function ContentPage({
@@ -25,10 +30,14 @@ export function ContentPage({
   description,
   lastUpdated,
   publishedDate,
+  coverImage,
+  coverImageAlt,
   breadcrumbs,
   relatedLinks,
   children,
   className,
+  wide = false,
+  unstyledContent = false,
 }: ContentPageProps) {
   const trail: BreadcrumbItem[] = breadcrumbs ?? [
     { label: "Home", href: "/" },
@@ -42,7 +51,12 @@ export function ContentPage({
         <div className="landing-dot-grid absolute inset-0 opacity-40" />
       </div>
 
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16">
+      <div
+        className={cn(
+          "mx-auto px-4 py-12 sm:px-6 sm:py-16",
+          wide ? "max-w-5xl" : "max-w-3xl",
+        )}
+      >
         <nav aria-label="Breadcrumb" className="mb-8">
           <ol className="flex flex-wrap items-center gap-1.5 text-sm text-muted-foreground">
             {trail.map((item, index) => {
@@ -95,21 +109,38 @@ export function ContentPage({
           ) : null}
         </header>
 
-        <div
-          className={cn(
-            "rounded-2xl border border-border/60 bg-card/80 p-6 shadow-sm backdrop-blur-sm sm:p-8",
-            "[&_h2]:mt-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-brand-charcoal [&_h2]:first:mt-0 dark:[&_h2]:text-foreground",
-            "[&_h3]:mt-6 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground",
-            "[&_p]:mt-3 [&_p]:leading-relaxed [&_p]:text-muted-foreground",
-            "[&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:text-muted-foreground",
-            "[&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-5 [&_ol]:text-muted-foreground",
-            "[&_a]:font-medium [&_a]:text-brand-red [&_a]:underline-offset-4 hover:[&_a]:underline",
-            "[&_strong]:font-semibold [&_strong]:text-foreground",
-            className,
-          )}
-        >
-          {children}
-        </div>
+        {coverImage ? (
+          <div className="relative mb-8 aspect-[16/9] overflow-hidden rounded-2xl border border-border/60 shadow-sm">
+            <Image
+              src={coverImage}
+              alt={coverImageAlt ?? title}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 768px"
+              priority
+            />
+          </div>
+        ) : null}
+
+        {unstyledContent ? (
+          children
+        ) : (
+          <div
+            className={cn(
+              "rounded-2xl border border-border/60 bg-card/80 p-6 shadow-sm backdrop-blur-sm sm:p-8",
+              "[&_h2]:mt-8 [&_h2]:text-lg [&_h2]:font-semibold [&_h2]:text-brand-charcoal [&_h2]:first:mt-0 dark:[&_h2]:text-foreground",
+              "[&_h3]:mt-6 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground",
+              "[&_p]:mt-3 [&_p]:leading-relaxed [&_p]:text-muted-foreground",
+              "[&_ul]:mt-3 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_ul]:text-muted-foreground",
+              "[&_ol]:mt-3 [&_ol]:list-decimal [&_ol]:space-y-2 [&_ol]:pl-5 [&_ol]:text-muted-foreground",
+              "[&_a]:font-medium [&_a]:text-brand-red [&_a]:underline-offset-4 hover:[&_a]:underline",
+              "[&_strong]:font-semibold [&_strong]:text-foreground",
+              className,
+            )}
+          >
+            {children}
+          </div>
+        )}
 
         {relatedLinks && relatedLinks.length > 0 ? (
           <aside

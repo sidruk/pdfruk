@@ -32,10 +32,14 @@ export function createStaticPage(config: StaticPageConfig) {
     children,
     showLastUpdated = true,
     extraJsonLd,
+    wide = false,
+    unstyledContent = false,
   }: {
     children: ReactNode;
     showLastUpdated?: boolean;
     extraJsonLd?: Record<string, unknown> | Record<string, unknown>[];
+    wide?: boolean;
+    unstyledContent?: boolean;
   }) {
     const jsonLd: Record<string, unknown>[] = [
       buildWebPageJsonLd({
@@ -64,6 +68,8 @@ export function createStaticPage(config: StaticPageConfig) {
           description={config.description}
           lastUpdated={showLastUpdated ? formatLastUpdated(config.dateModified) : undefined}
           relatedLinks={config.relatedLinks}
+          wide={wide}
+          unstyledContent={unstyledContent}
         >
           {children}
         </ContentPage>

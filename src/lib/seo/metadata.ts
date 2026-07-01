@@ -25,15 +25,18 @@ export function buildPageMetadata({
   path = "/",
   keywords,
   noIndex = false,
+  ogImage: ogImagePath,
 }: {
   title: string;
   description: string;
   path?: string;
   keywords?: string[];
   noIndex?: boolean;
+  ogImage?: string;
 }): Metadata {
   const url = absoluteUrl(path);
-  const ogImage = absoluteUrl("/icon.png");
+  const ogImage = absoluteUrl(ogImagePath ?? "/icon.png");
+  const isSquareIcon = !ogImagePath || ogImagePath === "/icon.png";
 
   return {
     title,
@@ -53,9 +56,9 @@ export function buildPageMetadata({
       images: [
         {
           url: ogImage,
-          width: 512,
-          height: 512,
-          alt: SITE_NAME,
+          width: isSquareIcon ? 512 : 1200,
+          height: isSquareIcon ? 512 : 630,
+          alt: title,
         },
       ],
     },
@@ -339,12 +342,14 @@ export function buildBlogPostJsonLd({
   path,
   datePublished,
   dateModified,
+  image,
 }: {
   title: string;
   description: string;
   path: string;
   datePublished: string;
   dateModified: string;
+  image?: string;
 }) {
   const siteUrl = getSiteUrl();
   const url = absoluteUrl(path);
@@ -357,6 +362,7 @@ export function buildBlogPostJsonLd({
     url,
     datePublished,
     dateModified,
+    ...(image ? { image: absoluteUrl(image) } : {}),
     author: {
       "@type": "Organization",
       name: SITE_NAME,

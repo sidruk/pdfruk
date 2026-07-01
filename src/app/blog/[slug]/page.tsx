@@ -44,6 +44,7 @@ export function generateMetadata({ params }: BlogPostPageProps): Metadata {
     description: post.excerpt,
     path: getBlogPostPath(post.slug),
     keywords: post.keywords,
+    ogImage: post.coverImage,
   });
 }
 
@@ -62,6 +63,7 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
       path,
       datePublished: post.datePublished,
       dateModified: post.dateModified,
+      image: post.coverImage,
     }),
     buildBreadcrumbJsonLd([
       { name: "Home", path: "/" },
@@ -78,6 +80,8 @@ export default function BlogPostPage({ params }: BlogPostPageProps) {
         title={post.title}
         description={post.excerpt}
         publishedDate={formatDate(post.datePublished)}
+        coverImage={post.coverImage}
+        coverImageAlt={post.coverImageAlt}
         lastUpdated={
           post.dateModified !== post.datePublished
             ? formatDate(post.dateModified)

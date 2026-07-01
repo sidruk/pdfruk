@@ -10,12 +10,21 @@ export type BlogPostMeta = {
   excerpt: string;
   datePublished: string;
   dateModified: string;
+  coverImage: string;
+  coverImageAlt: string;
   keywords: string[];
   sitemapPriority: number;
   icon: LucideIcon;
   relatedLinks: StaticPageLink[];
   faqs?: StaticPageFaq[];
 };
+
+function blogCover(slug: string): { coverImage: string; coverImageAlt: string } {
+  return {
+    coverImage: `/blog/${slug}.png`,
+    coverImageAlt: "",
+  };
+}
 
 export function getBlogPostPath(slug: string): string {
   return `/blog/${slug}`;
@@ -31,6 +40,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
       "Encrypt your CV or cover letter before emailing recruiters. Step-by-step guide to password-protecting application PDFs locally — no upload, no account.",
     datePublished: "2026-07-01",
     dateModified: "2026-07-01",
+    ...blogCover("password-protect-pdf-job-applications"),
+    coverImageAlt:
+      "Padlock on a PDF resume illustrating password protection for job applications",
     keywords: [
       "password protect pdf job application",
       "encrypt cv pdf",
@@ -77,6 +89,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
       "HR teams process candidate and employee data daily. Learn which PDF tools create GDPR processor risk — and how browser-based processing keeps personal data on your device.",
     datePublished: "2026-07-01",
     dateModified: "2026-07-01",
+    ...blogCover("pdf-tools-for-hr-gdpr"),
+    coverImageAlt:
+      "Shield protecting HR documents for GDPR-compliant PDF processing",
     keywords: [
       "pdf tools hr gdpr",
       "gdpr compliant pdf tools",
@@ -123,6 +138,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
       "Merge proposals, sign NDAs, watermark deliverables, and protect client files — without subscriptions, sign-up walls, or branded watermarks on your output.",
     datePublished: "2026-07-01",
     dateModified: "2026-07-01",
+    ...blogCover("best-free-pdf-editor-freelancers"),
+    coverImageAlt:
+      "Freelancer workspace with laptop showing free PDF editing tools",
     keywords: [
       "best free pdf editor freelancers",
       "free pdf tools freelancer",
@@ -169,6 +187,9 @@ export const BLOG_POSTS: BlogPostMeta[] = [
       "Most online PDF mergers upload your files to a server. Learn the difference between server-side and browser-based merging — and how to combine PDFs without your files ever leaving your device.",
     datePublished: "2026-06-30",
     dateModified: "2026-06-30",
+    ...blogCover("is-it-safe-to-merge-pdf-online"),
+    coverImageAlt:
+      "PDF files merging safely inside a browser without server upload",
     keywords: [
       "is it safe to merge pdf online",
       "merge pdf online safe",
@@ -215,8 +236,11 @@ export const BLOG_POSTS: BlogPostMeta[] = [
       "Why Browser PDF Tools Are Safer for Confidential Documents",
     excerpt:
       "Most cloud PDF services upload your files to remote servers. Learn why client-side processing keeps contracts, invoices, and personal records on your device.",
-    datePublished: "2025-06-12",
-    dateModified: "2025-06-29",
+    datePublished: "2026-06-12",
+    dateModified: "2026-06-29",
+    ...blogCover("why-browser-pdf-tools-are-safer"),
+    coverImageAlt:
+      "Browser shield keeping confidential PDF documents on your device",
     keywords: [
       "browser pdf tools",
       "private pdf editor",
@@ -251,8 +275,11 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     metaTitle: "How to Merge PDFs Without Uploading — Step-by-Step Guide",
     excerpt:
       "A step-by-step guide to combining multiple PDF files in your browser using pdfruk — fast, free, and private.",
-    datePublished: "2025-06-05",
-    dateModified: "2025-06-29",
+    datePublished: "2026-06-05",
+    dateModified: "2026-06-29",
+    ...blogCover("merge-pdf-without-uploading"),
+    coverImageAlt:
+      "Multiple PDF files combining in the browser without uploading",
     keywords: [
       "merge pdf without uploading",
       "combine pdf browser",
@@ -286,8 +313,11 @@ export const BLOG_POSTS: BlogPostMeta[] = [
     metaTitle: "Free PDF Tools Without Watermarks or Sign-Up",
     excerpt:
       "What to look for in a PDF toolkit and why pdfruk avoids paywalls, accounts, and branded watermarks on your output.",
-    datePublished: "2025-05-28",
-    dateModified: "2025-06-29",
+    datePublished: "2026-05-28",
+    dateModified: "2026-06-29",
+    ...blogCover("free-pdf-tools-no-watermarks"),
+    coverImageAlt:
+      "Clean PDF document with no watermarks from free online tools",
     keywords: [
       "free pdf tools no watermark",
       "pdf editor no sign up",
@@ -318,7 +348,10 @@ export const BLOG_POSTS: BlogPostMeta[] = [
 ];
 
 export function getAllBlogPosts(): BlogPostMeta[] {
-  return BLOG_POSTS;
+  return [...BLOG_POSTS].sort(
+    (a, b) =>
+      new Date(b.datePublished).getTime() - new Date(a.datePublished).getTime(),
+  );
 }
 
 export function getBlogPost(slug: string): BlogPostMeta | undefined {
