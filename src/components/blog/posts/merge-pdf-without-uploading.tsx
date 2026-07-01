@@ -67,8 +67,8 @@ export function MergePdfWithoutUploadingContent() {
 
       <h2>What to do after merging</h2>
       <p>
-        Once merged, you might want to <Link href="/compress">compress</Link> the
-        file for email, add <Link href="/page-numbers">page numbers</Link>, or{" "}
+        Once merged, you might want to add{" "}
+        <Link href="/page-numbers">page numbers</Link> or{" "}
         <Link href="/sign-pdf">sign</Link> the final document. All of these tools
         are available free on pdfruk with the same privacy-first approach.
       </p>

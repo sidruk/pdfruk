@@ -12,7 +12,6 @@ export const TRACKABLE_TOOL_IDS = [
   "page-numbers",
   "crop",
   "pdf-forms",
-  "compress",
   "pdf-to-jpg",
   "protect",
   "unlock",

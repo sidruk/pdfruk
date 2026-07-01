@@ -19,7 +19,7 @@ export default function AboutPage() {
 
       <h2>Our mission</h2>
       <p>
-        We believe document tools should respect your privacy. That is why most
+        We believe document tools should respect your privacy. That is why all
         pdfruk utilities run entirely in your browser — your files stay on your
         device and are never uploaded for merge, split, edit, convert, sign, and
         similar tasks. Read how we protect your data on our{" "}
@@ -29,8 +29,8 @@ export default function AboutPage() {
       <h2>What makes pdfruk different</h2>
       <ul>
         <li>
-          <strong>Privacy-first:</strong> Client-side processing by default, with
-          clear disclosure when a tool needs server assistance.
+          <strong>Privacy-first:</strong> All tools run locally in your browser —
+          your files are never uploaded to our servers.
         </li>
         <li>
           <strong>Truly free:</strong> No subscriptions, no paywalls, no hidden
@@ -43,8 +43,8 @@ export default function AboutPage() {
         <li>
           <strong>Practical tools:</strong>{" "}
           <Link href="/merge">Merge</Link>, <Link href="/split">split</Link>,{" "}
-          <Link href="/compress">compress</Link>, <Link href="/rotate">rotate</Link>,{" "}
-          <Link href="/crop">crop</Link>, <Link href="/watermark">watermark</Link>,{" "}
+          <Link href="/rotate">rotate</Link>, <Link href="/crop">crop</Link>,{" "}
+          <Link href="/watermark">watermark</Link>,{" "}
           <Link href="/sign-pdf">sign</Link>, and more in one place.
         </li>
       </ul>

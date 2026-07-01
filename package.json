@@ -4,8 +4,6 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "dev:compress": "docker compose up --build compress-api",
-    "dev:compress:local": "py -3.11 -m uvicorn main:app --reload --host 127.0.0.1 --port 8000 --app-dir python",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",

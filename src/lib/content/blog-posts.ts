@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { FileText, Shield, Sparkles } from "lucide-react";
+import { FileText, Lock, Shield, Sparkles } from "lucide-react";
 
 import type { StaticPageFaq, StaticPageLink } from "@/lib/seo/static-pages";
 
@@ -22,6 +22,145 @@ export function getBlogPostPath(slug: string): string {
 }
 
 export const BLOG_POSTS: BlogPostMeta[] = [
+  {
+    slug: "password-protect-pdf-job-applications",
+    title: "How to Password-Protect a PDF for Job Applications",
+    metaTitle:
+      "How to Password-Protect a PDF for Job Applications (2026 Guide)",
+    excerpt:
+      "Encrypt your CV or cover letter before emailing recruiters. Step-by-step guide to password-protecting application PDFs locally — no upload, no account.",
+    datePublished: "2026-07-01",
+    dateModified: "2026-07-01",
+    keywords: [
+      "password protect pdf job application",
+      "encrypt cv pdf",
+      "password protect cv",
+      "secure job application pdf",
+      "protect pdf for recruiters",
+      "password protect cover letter pdf",
+    ],
+    sitemapPriority: 0.77,
+    icon: Lock,
+    faqs: [
+      {
+        question: "Should I password-protect every job application?",
+        answer:
+          "Use it when your PDF contains personal data you would not want forwarded casually, or when applying by direct email. Portal uploads usually do not need a password.",
+      },
+      {
+        question: "Can recruiters open password-protected PDFs on mobile?",
+        answer:
+          "Yes. Standard encrypted PDFs open in modern mobile viewers when you include the password clearly in your email body.",
+      },
+      {
+        question: "Does pdfruk store my CV or password?",
+        answer:
+          "No. The protect tool encrypts your file in the browser. We do not receive your document contents or the password you set.",
+      },
+      {
+        question: "What if my PDF is already password-protected?",
+        answer:
+          "Unlock it with the current password, make edits, then protect it again with a new password for the application.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/protect", label: "Protect PDF" },
+      { href: "/merge", label: "Merge PDF" },
+      { href: "/security", label: "Security" },
+    ],
+  },
+  {
+    slug: "pdf-tools-for-hr-gdpr",
+    title: "PDF Tools for HR That Don't Violate GDPR",
+    metaTitle: "PDF Tools for HR That Don't Violate GDPR (UK & EU, 2026)",
+    excerpt:
+      "HR teams process candidate and employee data daily. Learn which PDF tools create GDPR processor risk — and how browser-based processing keeps personal data on your device.",
+    datePublished: "2026-07-01",
+    dateModified: "2026-07-01",
+    keywords: [
+      "pdf tools hr gdpr",
+      "gdpr compliant pdf tools",
+      "hr pdf processing gdpr",
+      "candidate cv gdpr",
+      "secure pdf tools hr",
+      "uk gdpr pdf upload",
+    ],
+    sitemapPriority: 0.76,
+    icon: Shield,
+    faqs: [
+      {
+        question: "Is uploading a CV to an online PDF tool a GDPR breach?",
+        answer:
+          "Not automatically — but it is a processing activity that must be lawful, documented, and secured. Uploading to an unvetted site without a DPA is a common compliance gap.",
+      },
+      {
+        question: "Are browser-based PDF tools GDPR-compliant by default?",
+        answer:
+          "No tool is GDPR-certified in isolation. Local processing reduces processor risk for file contents, but you still need policies, device security, and lawful bases.",
+      },
+      {
+        question: "Can we use pdfruk for candidate CVs?",
+        answer:
+          "Many teams use client-side merge, split, and protect tools because files stay on the user's device. Your DPO should confirm fit with your policies.",
+      },
+      {
+        question: "What about AI PDF tools for HR?",
+        answer:
+          "Treat them as high-risk: they typically upload full documents to model providers. Avoid pasting employee data into unapproved AI tools.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/merge", label: "Merge PDF" },
+      { href: "/privacy", label: "Privacy policy" },
+      { href: "/security", label: "Security" },
+    ],
+  },
+  {
+    slug: "best-free-pdf-editor-freelancers",
+    title: "Best Free PDF Editor for Freelancers (2026)",
+    metaTitle: "Best Free PDF Editor for Freelancers — No Watermarks (2026)",
+    excerpt:
+      "Merge proposals, sign NDAs, watermark deliverables, and protect client files — without subscriptions, sign-up walls, or branded watermarks on your output.",
+    datePublished: "2026-07-01",
+    dateModified: "2026-07-01",
+    keywords: [
+      "best free pdf editor freelancers",
+      "free pdf tools freelancer",
+      "pdf editor no watermark free",
+      "freelance pdf workflow",
+      "sign pdf free freelancer",
+      "private pdf editor free",
+    ],
+    sitemapPriority: 0.75,
+    icon: Sparkles,
+    faqs: [
+      {
+        question: "Is there a truly free PDF editor with no limits?",
+        answer:
+          "pdfruk does not cap core merge, split, edit, or sign tasks with watermarks or daily quotas. Limits are browser memory and file size, not artificial paywalls.",
+      },
+      {
+        question: "Can I edit PDF text for free without Adobe?",
+        answer:
+          "Yes. pdfruk's edit PDF tool adjusts text and layout in the browser. Contracts and forms usually edit fine without Acrobat.",
+      },
+      {
+        question: "Will clients see pdfruk branding on my files?",
+        answer:
+          "No. pdfruk does not add watermarks or footers to files you create.",
+      },
+      {
+        question: "Is it safe to edit client contracts online?",
+        answer:
+          "Safest when processing stays local in your browser. Avoid uploading client agreements to unknown cloud editors.",
+      },
+    ],
+    relatedLinks: [
+      { href: "/#tools", label: "All tools" },
+      { href: "/edit-pdf", label: "Edit PDF" },
+      { href: "/blog/free-pdf-tools-no-watermarks", label: "Free tools guide" },
+    ],
+  },
   {
     slug: "is-it-safe-to-merge-pdf-online",
     title: "Is It Safe to Merge PDFs Online? What Happens to Your Files",

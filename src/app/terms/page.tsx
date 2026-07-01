@@ -19,9 +19,8 @@ export default function TermsPage() {
       <h2>Service description</h2>
       <p>
         pdfruk provides free online PDF utilities including merge, split,
-        convert, edit, sign, compress, and related tools. Most tools run in your
-        browser; some operations may use server-assisted processing as described
-        on the relevant tool pages and in our{" "}
+        convert, edit, sign, and related tools. All tools run in your browser as
+        described on the relevant tool pages and in our{" "}
         <Link href="/privacy">privacy policy</Link>.
       </p>
 

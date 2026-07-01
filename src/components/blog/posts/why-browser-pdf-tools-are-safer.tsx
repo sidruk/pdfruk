@@ -41,14 +41,11 @@ export function WhyBrowserPdfToolsAreSaferContent() {
         upload anywhere.
       </p>
 
-      <h2>When server processing is still needed</h2>
+      <h2>Password protection runs locally too</h2>
       <p>
-        Heavy <Link href="/compress">compression</Link> may still use server
-        assistance when browser-based methods are not enough. pdfruk discloses
-        those cases clearly. Password <Link href="/protect">protection</Link>{" "}
-        and <Link href="/unlock">unlock</Link> run locally in your browser.
-        Read our <Link href="/security">security page</Link> for the full
-        breakdown.
+        Password <Link href="/protect">protection</Link> and{" "}
+        <Link href="/unlock">unlock</Link> run locally in your browser. Read our{" "}
+        <Link href="/security">security page</Link> for the full breakdown.
       </p>
 
       <h2>What to look for in a private PDF toolkit</h2>

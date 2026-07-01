@@ -50,12 +50,12 @@ export const SECURITY_PAGE: StaticPageConfig = {
     {
       question: "Are pdfruk PDF tools secure?",
       answer:
-        "Yes. Most pdfruk tools process PDFs entirely in your browser, so files are not uploaded to our servers. Server-assisted tools use encrypted HTTPS and files are deleted after processing.",
+        "Yes. pdfruk tools process PDFs entirely in your browser, so files are not uploaded to our servers.",
     },
     {
       question: "Does pdfruk store my PDF files?",
       answer:
-        "No. Client-side tools never send your files to us. For compress, files are processed temporarily and not retained after your task completes.",
+        "No. Your files are processed locally in your browser and are never sent to or retained by us.",
     },
     {
       question: "Is pdfruk safe for confidential documents?",
@@ -92,7 +92,7 @@ export const PRIVACY_PAGE: StaticPageConfig = {
     {
       question: "Does pdfruk upload my PDF files?",
       answer:
-        "For most tools, no — processing happens in your browser. Only server-assisted tools like compress may temporarily transmit files to complete the operation.",
+        "No. All pdfruk tools process files in your browser. Your PDFs are never uploaded to our servers.",
     },
     {
       question: "What data does pdfruk collect?",

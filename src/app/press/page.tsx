@@ -33,11 +33,10 @@ export default function PressPage() {
       <h2>Key facts</h2>
       <ul>
         <li>Free PDF tools with no sign-up required</li>
-        <li>Most processing runs entirely in the user&apos;s browser</li>
+        <li>All processing runs entirely in the user&apos;s browser</li>
         <li>No watermarks on output files</li>
         <li>
-          Tools include merge, split, compress, convert, edit, sign, watermark,
-          and more
+          Tools include merge, split, convert, edit, sign, watermark, and more
         </li>
         <li>Website: pdfruk.com</li>
       </ul>

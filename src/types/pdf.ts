@@ -82,8 +82,6 @@ export type SplitWorkerRequest = {
   options: SplitOptions;
 };
 
-export type CompressPreset = "low" | "medium" | "high";
-
 export type WorkerProgressMessage = {
   type: "progress";
   current: number;

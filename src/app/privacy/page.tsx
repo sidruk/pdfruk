@@ -20,17 +20,12 @@ export default function PrivacyPage() {
 
       <h2>PDF files and document content</h2>
       <p>
-        For most tools, your PDF files are processed entirely in your browser and
+        For all tools, your PDF files are processed entirely in your browser and
         are never uploaded to our servers. We cannot access the content of files
         processed locally on your device — including when you{" "}
         <Link href="/merge">merge PDFs</Link>,{" "}
         <Link href="/split">split documents</Link>, or{" "}
         <Link href="/sign-pdf">add a signature</Link>.
-      </p>
-      <p>
-        For server-assisted tools (such as compress), files may be temporarily
-        transmitted to our backend to complete the operation. These files are
-        not stored permanently and are deleted after processing.
       </p>
 
       <h2>Information we may collect</h2>

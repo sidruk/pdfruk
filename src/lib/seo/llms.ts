@@ -10,7 +10,7 @@ const CATEGORY_INTROS: Record<ToolCategory, string> = {
   Organize: "Reorder, combine, and extract pages from PDF documents.",
   Convert: "Convert between PDF and image formats in the browser.",
   Edit: "Annotate, sign, watermark, and modify PDF content.",
-  Security: "Compress, password-protect, and unlock PDF files.",
+  Security: "Password-protect and unlock PDF files.",
 };
 
 function formatToolList(siteUrl: string, category: ToolCategory): string {

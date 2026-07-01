@@ -7,7 +7,7 @@ export const FAQ_ITEMS = [
   {
     question: "Do my PDF files get uploaded to a server?",
     answer:
-      "For most tools, no. Merge, split, rotate, convert, edit, sign, watermark, page-number, protect, and unlock tools all run entirely in your browser using client-side processing. Your files stay on your device and are never sent to our servers. Only compress may use a backend service when you use it.",
+      "For all tools, no. Merge, split, rotate, convert, edit, sign, watermark, page-number, protect, and unlock tools all run entirely in your browser using client-side processing. Your files stay on your device and are never sent to our servers.",
   },
   {
     question: "Is pdfruk safe for confidential documents?",

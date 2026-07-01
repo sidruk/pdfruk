@@ -1,6 +1,0 @@
-services:
-  compress-api:
-    build: ./python
-    ports:
-      - "8000:8000"
-    restart: unless-stopped
